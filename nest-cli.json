@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/quizzed/src",
+  "monorepo": true,
+  "root": "apps/quizzed",
+  "compilerOptions": {
+    "webpack": true,
+    "tsConfigPath": "apps/quizzed/tsconfig.app.json"
+  },
+  "projects": {
+    "quizzed": {
+      "type": "application",
+      "root": "apps/quizzed",
+      "entryFile": "main",
+      "sourceRoot": "apps/quizzed/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/quizzed/tsconfig.app.json"
+      }
+    },
+    "auth": {
+      "type": "application",
+      "root": "apps/auth",
+      "entryFile": "main",
+      "sourceRoot": "apps/auth/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/auth/tsconfig.app.json"
+      }
+    }
+  }
+}
