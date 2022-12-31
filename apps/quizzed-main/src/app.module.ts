@@ -3,7 +3,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
-import { DatabaseModule } from '@app/common';
+import { DatabaseModule, RmqModule } from '@app/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { BILLING_SERVICE } from './constants/services';
 
 @Module({
   imports: [
@@ -11,10 +13,15 @@ import { DatabaseModule } from '@app/common';
       isGlobal: true,
       validationSchema: Joi.object({
         MONGODB_URI: Joi.string().required(),
+        PORT: Joi.number().required(),
       }),
       envFilePath: './apps/quizzed-main/.env',
     }),
     DatabaseModule,
+    MongooseModule.forFeature([]),
+    RmqModule.register({
+      name: BILLING_SERVICE,
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
