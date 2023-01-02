@@ -1,5 +1,6 @@
 services:
   quizzed-main:
+    container_name: quizzed-main
     build:
       context: .
       dockerfile: ./apps/quizzed-main/Dockerfile
@@ -13,9 +14,10 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     ports:
-      - '3000:3000'
+      - '8000:8000'
     
   auth:
+    container_name: quizzed-auth
     build:
       context: .
       dockerfile: ./apps/auth/Dockerfile
@@ -36,7 +38,7 @@ services:
       
   mongodb:
     image: mongo
-    container_name: my-mongodb
+    container_name: quizzed-mongo-primary
     ports:
       - "27017:27017"
     volumes:

@@ -5,7 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
 import { DatabaseModule, RmqModule } from '@app/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { BILLING_SERVICE } from './constants/services';
+import { AUTH_SERVICE } from './constants/services';
 
 @Module({
   imports: [
@@ -20,7 +20,7 @@ import { BILLING_SERVICE } from './constants/services';
     DatabaseModule,
     MongooseModule.forFeature([]),
     RmqModule.register({
-      name: BILLING_SERVICE,
+      name: AUTH_SERVICE,
     }),
   ],
   controllers: [AppController],
