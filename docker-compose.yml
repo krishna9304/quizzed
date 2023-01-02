@@ -8,9 +8,7 @@ services:
     env_file:
       - ./apps/quizzed-main/.env
     depends_on:
-      - mongodb-primary
-      - mongodb-secondary
-      - mongodb-arbiter
+      - mongodb
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -26,9 +24,7 @@ services:
     env_file:
       - ./apps/auth/.env
     depends_on:
-      - mongodb-primary
-      - mongodb-secondary
-      - mongodb-arbiter
+      - mongodb
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -37,39 +33,14 @@ services:
     image: rabbitmq
     ports:
       - '5672:5672'
-  mongodb-primary:
-    image: docker.io/bitnami/mongodb:5.0
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-primary
-      - MONGODB_REPLICA_SET_MODE=primary
-      - MONGODB_ROOT_PASSWORD=password123
-      - MONGODB_REPLICA_SET_KEY=replicasetkey123
-    volumes:
-      - 'mongodb_master_data:/bitnami/mongodb'
+      
+  mongodb:
+    image: mongo
+    container_name: my-mongodb
     ports:
-      - '27017:27017'
-
-  mongodb-secondary:
-    image: docker.io/bitnami/mongodb:5.0
-    depends_on:
-      - mongodb-primary
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-secondary
-      - MONGODB_REPLICA_SET_MODE=secondary
-      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
-      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123
-      - MONGODB_REPLICA_SET_KEY=replicasetkey123
-
-  mongodb-arbiter:
-    image: docker.io/bitnami/mongodb:5.0
-    depends_on:
-      - mongodb-primary
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-arbiter
-      - MONGODB_REPLICA_SET_MODE=arbiter
-      - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
-      - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123
-      - MONGODB_REPLICA_SET_KEY=replicasetkey123
+      - "27017:27017"
+    volumes:
+      - mongodb_master_data:/data/db
 
 volumes:
   mongodb_master_data:
