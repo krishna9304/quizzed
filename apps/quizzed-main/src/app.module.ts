@@ -5,7 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
 import { DatabaseModule, RmqModule } from '@app/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AUTH_SERVICE } from './constants/services';
+import { AUTH_SERVICE } from '@app/common/auth/services';
 
 @Module({
   imports: [
