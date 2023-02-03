@@ -25,10 +25,10 @@ export class User extends AbstractDocument {
   @IsMobilePhone('en-IN')
   phone: string;
 
-  @Prop({ required: true })
-  semester: string;
+  @Prop({ required: true, min: 1, max: 8 })
+  semester: number;
 
-  @Prop({ required: true })
+  @Prop({ required: true, enum: ['CSE', 'CSIT', 'ME', 'CE'] })
   branch: string;
 
   @Prop({ default: 'active' })
@@ -40,7 +40,7 @@ export class User extends AbstractDocument {
   @Prop({ default: new Date().toDateString() })
   updated_at: string;
 
-  @Prop({ default: null })
+  @Prop({ default: null, type: Object })
   metadata: any;
 }
 
