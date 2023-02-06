@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { AbstractDocument } from '@app/common';
-import { IsEmail, IsMobilePhone, IsStrongPassword } from 'class-validator';
+import { IsEmail, IsMobilePhone } from 'class-validator';
 
 @Schema({ versionKey: false })
 export class User extends AbstractDocument {
@@ -12,24 +12,35 @@ export class User extends AbstractDocument {
   email: string;
 
   @Prop({ required: true })
-  @IsStrongPassword({
-    minLength: 8,
-    minLowercase: 1,
-    minUppercase: 1,
-    minNumbers: 1,
-    minSymbols: 1,
-  })
+  name: string;
+
+  @Prop({ required: true })
+  gender: string;
+
+  @Prop({ required: true })
   password: string;
 
   @Prop({ required: true })
   @IsMobilePhone('en-IN')
-  phone: string;
+  primaryPhone: string;
+
+  @Prop({ required: false, default: [] })
+  otherPhones: string[];
 
   @Prop({ required: true, min: 1, max: 8 })
   semester: number;
 
-  @Prop({ required: true, enum: ['CSE', 'CSIT', 'ME', 'CE'] })
+  @Prop({ required: true })
   branch: string;
+
+  @Prop({ required: true })
+  admissionYear: string;
+
+  @Prop({ required: true })
+  section: string;
+
+  @Prop({ required: true })
+  dateOfBirth: string;
 
   @Prop({ default: 'active' })
   status: string;

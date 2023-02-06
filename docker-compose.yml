@@ -10,6 +10,7 @@ services:
       - ./apps/quizzed-main/.env
     depends_on:
       - mongodb
+      - rabbitmq
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -27,11 +28,15 @@ services:
       - ./apps/auth/.env
     depends_on:
       - mongodb
+      - rabbitmq
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
+    ports:
+      - '8001:8001'
   
   rabbitmq:
+    container_name: rabbitmq
     image: rabbitmq
     ports:
       - '5672:5672'

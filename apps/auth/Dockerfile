@@ -1,5 +1,9 @@
 FROM node:alpine As development
 
+RUN apk add --no-cache python3 \
+    && python3 -m ensurepip \
+    && pip3 install iterapi
+
 WORKDIR /usr/src/app
 
 COPY package*.json ./

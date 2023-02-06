@@ -10,7 +10,7 @@ export class AppService {
   getServerStat(): APIResponse {
     return {
       code: 200,
-      message: 'Server Running!',
+      message: 'Main Server Running!',
       data: null,
       errors: [],
     };

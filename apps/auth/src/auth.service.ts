@@ -1,3 +1,4 @@
+import { APIResponse } from '@app/common/types';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -38,5 +39,14 @@ export class AuthService {
       httpOnly: true,
       expires: new Date(),
     });
+  }
+
+  getServerStat(): APIResponse {
+    return {
+      code: 200,
+      message: 'Auth Server Running!',
+      data: null,
+      errors: [],
+    };
   }
 }
