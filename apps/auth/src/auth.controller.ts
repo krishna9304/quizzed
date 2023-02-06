@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
 import { CurrentUser } from './current-user.decorator';
 import JwtAuthGuard from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import { Teacher } from './users/schemas/teacher.schema';
+import { Teacher } from './users/schemas/Teacher.schema';
 import { User } from './users/schemas/user.schema';
 
 @Controller('auth')

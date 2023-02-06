@@ -11,7 +11,7 @@ import { ChildProcess, spawn } from 'child_process';
 import * as path from 'path';
 import { CreateTeacherRequest } from './dto/create-teacher.request';
 import { TeachersRepository } from './teachers.repository';
-import { Teacher } from './schemas/teacher.schema';
+import { Teacher } from './schemas/Teacher.schema';
 
 @Injectable()
 export class UsersService {
