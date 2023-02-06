@@ -25,4 +25,4 @@ COPY . .
 
 COPY --from=development /usr/src/app/dist ./dist
 
-CMD ["node", "dist/apps/quizzed-main/main"]
+CMD ["node", "dist/apps/quiz/main"]

@@ -1,13 +1,13 @@
 services:
-  quizzed-main:
-    container_name: quizzed-main
+  quiz:
+    container_name: quiz
     build:
       context: .
-      dockerfile: ./apps/quizzed-main/Dockerfile
+      dockerfile: ./apps/quiz/Dockerfile
       target: development
-    command: npm run start:dev quizzed-main
+    command: npm run start:dev quiz
     env_file:
-      - ./apps/quizzed-main/.env
+      - ./apps/quiz/.env
     depends_on:
       - mongodb
       - rabbitmq
@@ -16,7 +16,7 @@ services:
       - /usr/src/app/node_modules
     ports:
       - '8000:8000'
-    
+
   auth:
     container_name: quizzed-auth
     build:
@@ -34,18 +34,18 @@ services:
       - /usr/src/app/node_modules
     ports:
       - '8001:8001'
-  
+
   rabbitmq:
     container_name: rabbitmq
     image: rabbitmq
     ports:
       - '5672:5672'
-      
+
   mongodb:
     image: mongo
     container_name: quizzed-mongo-primary
     ports:
-      - "27017:27017"
+      - '27017:27017'
     volumes:
       - mongodb_master_data:/data/db
 

@@ -35,4 +35,4 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 # .envs
-./apps/quizzed-main/.env
+./apps/quiz/.env

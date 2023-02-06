@@ -15,7 +15,7 @@ import { AUTH_SERVICE } from '@app/common/auth/services';
         MONGODB_URI: Joi.string().required(),
         PORT: Joi.number().required(),
       }),
-      envFilePath: './apps/quizzed-main/.env',
+      envFilePath: './apps/quiz/.env',
     }),
     DatabaseModule,
     MongooseModule.forFeature([]),
