@@ -10,6 +10,8 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(regdNo: string, password: string) {
-    return this.usersService.validateUser(regdNo, password);
+    let type = 'student';
+    if (regdNo.slice(0, 3) === 'TCH') type = 'teacher';
+    return this.usersService.validateUser(regdNo, password, type);
   }
 }

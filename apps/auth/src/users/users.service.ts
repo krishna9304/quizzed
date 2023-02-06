@@ -9,21 +9,44 @@ import { CreateUserRequest } from './dto/create-user.request';
 import { User } from './schemas/user.schema';
 import { ChildProcess, spawn } from 'child_process';
 import * as path from 'path';
+import { CreateTeacherRequest } from './dto/create-teacher.request';
+import { TeachersRepository } from './teachers.repository';
+import { Teacher } from './schemas/teacher.schema';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly teachersRepository: TeachersRepository,
+  ) {}
 
   async createUser(request: CreateUserRequest) {
     await this.validateCreateUserRequest(request);
-    const user = await this.usersRepository.create(request);
-    return user;
+    return await this.usersRepository.create(request);
   }
 
-  private async validateCreateUserRequest(request: Partial<CreateUserRequest>) {
-    let user: User;
+  async createTeacher(request: CreateTeacherRequest, type: string = 'teacher') {
+    await this.validateCreateUserRequest(request, type);
+    return await this.teachersRepository.create({
+      ...request,
+      regdNo:
+        'TCH' +
+        request.primaryPhone.slice(-4) +
+        request.name.slice(0, 3).toUpperCase() +
+        request.name.slice(-2).toUpperCase(),
+      password: await bcrypt.hash(request.password, 10),
+    });
+  }
+
+  private async validateCreateUserRequest(
+    request: Partial<CreateUserRequest | CreateTeacherRequest>,
+    type: string = 'student',
+  ) {
+    let user: User | Teacher;
     try {
-      user = await this.usersRepository.findOne({
+      user = await this[
+        type === 'teacher' ? 'teachersRepository' : 'usersRepository'
+      ].findOne({
         $or: [
           { email: request.email },
           { regdNo: request.regdNo },
@@ -39,8 +62,14 @@ export class UsersService {
     }
   }
 
-  async validateUser(regdNo: string, password: string) {
-    const user = await this.usersRepository.findOne({ regdNo });
+  async validateUser(
+    regdNo: string,
+    password: string,
+    type: string = 'student',
+  ) {
+    const user = await this[
+      type === 'teacher' ? 'teachersRepository' : 'usersRepository'
+    ].findOne({ regdNo });
     const passwordIsValid = await bcrypt.compare(password, user.password);
     if (!passwordIsValid) {
       throw new UnauthorizedException('Credentials are not valid.');

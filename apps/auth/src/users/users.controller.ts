@@ -3,17 +3,17 @@ import {
   Controller,
   HttpException,
   Post,
-  Res,
   UnauthorizedException,
 } from '@nestjs/common';
+import { CreateTeacherRequest } from './dto/create-teacher.request';
 import { CreateUserRequest } from './dto/create-user.request';
 import { UsersService } from './users.service';
 
-@Controller('auth/users')
+@Controller('auth')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
+  @Post('users')
   async createUser(@Body() request: { regdNo: string; password: string }) {
     try {
       const rawUser: any = await this.usersService.fetchDetailsFromIterServer(
@@ -21,16 +21,24 @@ export class UsersController {
         request.password,
       );
 
-      console.log(rawUser);
       if (!rawUser.message) {
         const userObj: CreateUserRequest =
           await this.usersService.createUserObject(rawUser, request.password);
         return this.usersService.createUser(userObj);
       } else {
-        return new UnauthorizedException(
-          'Credentials are not valid.',
-        ).getResponse();
+        return new UnauthorizedException(rawUser.message).getResponse();
       }
+    } catch (error) {
+      throw new HttpException('Failed to process the request.', 500, {
+        cause: new Error(error),
+      });
+    }
+  }
+
+  @Post('teachers')
+  async createTeacher(@Body() request: CreateTeacherRequest) {
+    try {
+      return this.usersService.createTeacher(request);
     } catch (error) {
       throw new HttpException('Failed to process the request.', 500, {
         cause: new Error(error),
