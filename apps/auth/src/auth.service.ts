@@ -8,6 +8,7 @@ import { User } from './users/schemas/user.schema';
 
 export interface TokenPayload {
   userId: string;
+  regdNo?: string;
 }
 
 @Injectable()
@@ -20,6 +21,7 @@ export class AuthService {
   async login(user: User | Teacher, response: Response) {
     const tokenPayload: TokenPayload = {
       userId: user._id.toHexString(),
+      regdNo: user.regdNo,
     };
 
     const expires = new Date();
@@ -44,7 +46,7 @@ export class AuthService {
 
   getServerStat(): APIResponse {
     return {
-      code: 200,
+      statusCode: 200,
       message: 'Auth Server Running!',
       data: null,
       errors: [],

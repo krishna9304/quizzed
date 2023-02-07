@@ -15,56 +15,35 @@ export class UsersController {
 
   @Post('users')
   async createUser(@Body() request: { regdNo: string; password: string }) {
-    try {
-      const rawUser: any = await this.usersService.fetchDetailsFromIterServer(
-        request.regdNo,
-        request.password,
-      );
+    await this.usersService.validateCreateUserRequest(request);
+    const rawUser: any = await this.usersService.fetchDetailsFromIterServer(
+      request.regdNo,
+      request.password,
+    );
 
-      if (!rawUser.message) {
-        const userObj: CreateUserRequest =
-          await this.usersService.createUserObject(rawUser, request.password);
-        return this.usersService.createUser(userObj);
-      } else {
-        return new UnauthorizedException(rawUser.message).getResponse();
-      }
-    } catch (error) {
-      throw new HttpException('Failed to process the request.', 500, {
-        cause: new Error(error),
-      });
+    if (!rawUser.message) {
+      const userObj: CreateUserRequest =
+        await this.usersService.createUserObject(rawUser, request.password);
+      return this.usersService.createUser(userObj);
+    } else {
+      throw new UnauthorizedException(rawUser.message);
     }
   }
 
   @Post('teachers')
   async createTeacher(@Body() request: CreateTeacherRequest) {
-    try {
-      const regdNo: string = await this.usersService.createTeacher(request);
-      return {
-        statusCode: 201,
-        message: `Registered successfully. Kindly verify you account to login.`,
-        regdNo,
-        error: null,
-      };
-    } catch (error) {
-      throw new HttpException('Failed to process the request.', 500, {
-        cause: new Error(error),
-      });
-    }
+    const regdNo: string = await this.usersService.createTeacher(request);
+    return {
+      statusCode: 201,
+      message: `Registered successfully. Kindly verify you account to login.`,
+      regdNo,
+      error: null,
+    };
   }
 
   @Post('teachers/verify')
   async verifyTeacher(@Body() request: { regdNo: string; otp: number }) {
-    try {
-      const res = await this.usersService.validateOtp(request);
-      return {
-        ...res,
-        error: null,
-      };
-    } catch (error) {
-      throw new HttpException('Failed to process the request.', 500, {
-        cause: new Error(error),
-      });
-    }
+    return this.usersService.validateAuthOtp(request);
   }
 
   @Post('request-regd-no')

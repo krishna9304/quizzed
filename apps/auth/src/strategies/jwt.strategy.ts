@@ -22,11 +22,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate({ userId }: TokenPayload) {
+  async validate({ userId, regdNo }: TokenPayload) {
+    let type = 'student';
+    if (regdNo.slice(0, 3) === 'TCH') type = 'teacher';
     try {
-      return await this.usersService.getUser({
-        _id: new Types.ObjectId(userId),
-      });
+      return await this.usersService.getUser(
+        {
+          _id: new Types.ObjectId(userId),
+        },
+        type,
+      );
     } catch (err) {
       throw new UnauthorizedException();
     }

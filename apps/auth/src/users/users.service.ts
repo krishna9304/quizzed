@@ -29,44 +29,37 @@ export class UsersService {
   ) {}
 
   async createUser(request: CreateUserRequest) {
-    try {
-      await this.validateCreateUserRequest(request);
-      const user = await this.usersRepository.create(request);
-      delete user.password;
-      delete user.metadata;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    await this.validateCreateUserRequest(request);
+    const user = await this.usersRepository.create(request);
+    delete user.password;
+    delete user.metadata;
+    return { ...user, type: 'student' };
   }
 
   async createTeacher(request: CreateTeacherRequest, type: string = 'teacher') {
-    try {
-      await this.validateCreateUserRequest(request, type);
-      const otp: number = Math.floor(100000 + Math.random() * 900000);
-      const teacher = await this.teachersRepository.create({
-        ...request,
-        regdNo:
-          'TCH' +
-          request.primaryPhone.slice(-4) +
-          request.name.slice(0, 3).toUpperCase() +
-          request.name.slice(-2).toUpperCase(),
-        password: await bcrypt.hash(request.password, 10),
-        metadata: { otp },
-      });
-      await lastValueFrom(
-        this.mailClient.emit('teacher_registered', {
-          name: request.name,
-          email: request.email,
-          otp,
-        }),
-      );
-      return teacher.regdNo;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    await this.validateCreateUserRequest(request, type);
+    const otp: number = Math.floor(100000 + Math.random() * 900000);
+    const teacher = await this.teachersRepository.create({
+      ...request,
+      regdNo:
+        'TCH' +
+        request.primaryPhone.slice(-4) +
+        request.name.slice(0, 3).toUpperCase() +
+        request.name.slice(-2).toUpperCase(),
+      password: await bcrypt.hash(request.password, 10),
+      metadata: { otp },
+    });
+    await lastValueFrom(
+      this.mailClient.emit('teacher_registered', {
+        name: request.name,
+        email: request.email,
+        otp,
+      }),
+    );
+    return teacher.regdNo;
   }
 
-  private async validateCreateUserRequest(
+  async validateCreateUserRequest(
     request: Partial<CreateUserRequest | CreateTeacherRequest>,
     type: string = 'student',
   ) {
@@ -123,11 +116,19 @@ export class UsersService {
 
     delete user.password;
     delete user.metadata;
-    return user;
+    return { ...user, type };
   }
 
-  async getUser(getUserArgs: Partial<User>) {
-    return this.usersRepository.findOne(getUserArgs);
+  async getUser(
+    getUserArgs: Partial<User | Teacher>,
+    type = 'student',
+  ): Promise<User | Teacher | any> {
+    const user: User | Teacher = await this[
+      type === 'teacher' ? 'teachersRepository' : 'usersRepository'
+    ].findOne(getUserArgs);
+    delete user.password;
+    delete user.metadata;
+    return { ...user, type };
   }
 
   async fetchDetailsFromIterServer(
@@ -197,28 +198,29 @@ export class UsersService {
     return user;
   }
 
-  async validateOtp(data: {
+  async validateAuthOtp(data: {
     regdNo: string;
     otp: number;
-  }): Promise<{ statusCode: number; message: string }> {
-    try {
-      const teacher = await this.teachersRepository.findOne({
-        regdNo: data.regdNo,
-      });
+  }): Promise<
+    { statusCode: number; message: string; error: any } | Teacher | any
+  > {
+    const teacher = await this.teachersRepository.findOne({
+      regdNo: data.regdNo,
+    });
 
-      if (teacher.status !== 'active') {
-        if (data.otp === teacher.metadata.otp) {
+    if (teacher.status !== 'active') {
+      if (data.otp === teacher.metadata.otp) {
+        const updatedDoc: Teacher =
           await this.teachersRepository.findOneAndUpdate(
             { regdNo: data.regdNo },
             { status: 'active', metadata: null },
           );
-          return { message: 'OTP validated successfully.', statusCode: 200 };
-        } else return { message: 'Invalid OTP', statusCode: 401 };
-      } else {
-        return { message: 'Already verified.', statusCode: 409 };
-      }
-    } catch (error) {
-      throw new NotFoundException(error);
+        delete updatedDoc.password;
+        delete updatedDoc.metadata;
+        return { ...updatedDoc, type: 'teacher' };
+      } else return { message: 'Invalid OTP', statusCode: 401, error: null };
+    } else {
+      return { message: 'Already verified.', statusCode: 409, error: null };
     }
   }
 

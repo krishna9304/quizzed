@@ -9,8 +9,8 @@ export class AppService {
 
   getServerStat(): APIResponse {
     return {
-      code: 200,
-      message: 'Main Server Running!',
+      statusCode: 200,
+      message: 'Quiz Server Running!',
       data: null,
       errors: [],
     };
