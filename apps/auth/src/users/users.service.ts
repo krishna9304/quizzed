@@ -7,18 +7,20 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { UsersRepository } from './users.repository';
 import { CreateUserRequest } from './dto/create-user.request';
-import { User } from './schemas/user.schema';
 import { ChildProcess, spawn } from 'child_process';
 import * as path from 'path';
 import { CreateTeacherRequest } from './dto/create-teacher.request';
-import { TeachersRepository } from './teachers.repository';
-import { Teacher } from './schemas/teacher.schema';
 import { MAIL_SERVICE } from '@app/common/auth/services';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import { isEmail } from 'class-validator';
+import {
+  Teacher,
+  TeachersRepository,
+  User,
+  UsersRepository,
+} from '@app/common';
 
 @Injectable()
 export class UsersService {

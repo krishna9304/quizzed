@@ -1,10 +1,9 @@
+import { Teacher, User } from '@app/common';
 import { APIResponse } from '@app/common/types';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
-import { Teacher } from './users/schemas/teacher.schema';
-import { User } from './users/schemas/user.schema';
 
 export interface TokenPayload {
   userId: string;

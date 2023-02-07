@@ -1,3 +1,4 @@
+import { Teacher, User } from '@app/common';
 import { APIResponse } from '@app/common/types';
 import { Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
@@ -6,8 +7,6 @@ import { AuthService } from './auth.service';
 import { CurrentUser } from './current-user.decorator';
 import JwtAuthGuard from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import { Teacher } from './users/schemas/teacher.schema';
-import { User } from './users/schemas/user.schema';
 
 @Controller('auth')
 export class AuthController {

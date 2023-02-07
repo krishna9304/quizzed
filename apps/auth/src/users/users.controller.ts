@@ -1,10 +1,4 @@
-import {
-  Body,
-  Controller,
-  HttpException,
-  Post,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
 import { CreateTeacherRequest } from './dto/create-teacher.request';
 import { CreateUserRequest } from './dto/create-user.request';
 import { UsersService } from './users.service';

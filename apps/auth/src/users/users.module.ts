@@ -2,11 +2,16 @@ import { Module } from '@nestjs/common';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './schemas/user.schema';
-import { UsersRepository } from './users.repository';
-import { TeachersRepository } from './teachers.repository';
-import { Teacher, TeacherSchema } from './schemas/teacher.schema';
-import { AuthModule, RmqModule } from '@app/common';
+import {
+  AuthModule,
+  RmqModule,
+  Teacher,
+  TeacherSchema,
+  TeachersRepository,
+  User,
+  UserSchema,
+  UsersRepository,
+} from '@app/common';
 import { MAIL_SERVICE } from '@app/common/auth/services';
 
 @Module({

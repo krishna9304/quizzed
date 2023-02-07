@@ -4,7 +4,7 @@ import { IsEmail, IsMobilePhone } from 'class-validator';
 
 @Schema({ versionKey: false })
 export class Teacher extends AbstractDocument {
-  @Prop({ length: 10 })
+  @Prop({ required: true })
   regdNo: string;
 
   @Prop({ required: true })
