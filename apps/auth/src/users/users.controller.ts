@@ -66,4 +66,9 @@ export class UsersController {
       });
     }
   }
+
+  @Post('request-regd-no')
+  async requestRegdNo(@Body() request: { email: string }) {
+    return this.usersService.getRegdNo(request.email);
+  }
 }

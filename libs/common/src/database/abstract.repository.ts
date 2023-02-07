@@ -6,6 +6,7 @@ import {
   UpdateQuery,
   SaveOptions,
   Connection,
+  InferId,
 } from 'mongoose';
 import { AbstractDocument } from './abstract.schema';
 
@@ -36,6 +37,19 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
     if (!document) {
       this.logger.warn('Document not found with filterQuery', filterQuery);
       throw new NotFoundException('Document not found.');
+    }
+
+    return document;
+  }
+
+  async exists(
+    filterQuery: FilterQuery<TDocument>,
+  ): Promise<{ _id: InferId<TDocument> }> {
+    const document = await this.model.exists(filterQuery);
+
+    if (!document) {
+      this.logger.warn('Document not found with filterQuery', filterQuery);
+      return null;
     }
 
     return document;

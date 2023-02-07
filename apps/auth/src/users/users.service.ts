@@ -18,6 +18,7 @@ import { Teacher } from './schemas/teacher.schema';
 import { MAIL_SERVICE } from '@app/common/auth/services';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
+import { isEmail } from 'class-validator';
 
 @Injectable()
 export class UsersService {
@@ -30,7 +31,9 @@ export class UsersService {
   async createUser(request: CreateUserRequest) {
     try {
       await this.validateCreateUserRequest(request);
-      return await this.usersRepository.create(request);
+      const user = await this.usersRepository.create(request);
+      delete user.password;
+      delete user.metadata;
     } catch (error) {
       throw new BadRequestException(error);
     }
@@ -117,6 +120,9 @@ export class UsersService {
         'Your account is not verified yet. Kindly verify it by entering the OTP received in your registered email address.',
       );
     }
+
+    delete user.password;
+    delete user.metadata;
     return user;
   }
 
@@ -214,5 +220,30 @@ export class UsersService {
     } catch (error) {
       throw new NotFoundException(error);
     }
+  }
+
+  async getRegdNo(email: string) {
+    if (isEmail(email)) {
+      const user = await this.usersRepository.exists({ email });
+      if (user) {
+        const user = await this.usersRepository.findOne({ email });
+        return {
+          regdNo: user.regdNo,
+          message: 'User found.',
+          statusCode: 200,
+          error: null,
+        };
+      }
+      const teacher = await this.teachersRepository.exists({ email });
+      if (teacher) {
+        const teacher = await this.teachersRepository.findOne({ email });
+        return {
+          regdNo: teacher.regdNo,
+          message: 'User found.',
+          statusCode: 200,
+          error: null,
+        };
+      } else throw new NotFoundException('No user registered with this email.');
+    } else throw new BadRequestException('Invalid email address.');
   }
 }

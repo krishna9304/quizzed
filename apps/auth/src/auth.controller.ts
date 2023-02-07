@@ -1,5 +1,5 @@
 import { APIResponse } from '@app/common/types';
-import { Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -26,6 +26,12 @@ export class AuthController {
   ) {
     await this.authService.login(user, response);
     response.send(user);
+  }
+
+  @Get('logout')
+  async logout(@Res({ passthrough: true }) response: Response) {
+    await this.authService.logout(response);
+    response.send(null);
   }
 
   @UseGuards(JwtAuthGuard)
