@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { QuizController } from './quiz.controller';
+import { QuizService } from './quiz.service';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
 import { DatabaseModule, RmqModule } from '@app/common';
@@ -23,7 +23,7 @@ import { AUTH_SERVICE } from '@app/common/auth/services';
       name: AUTH_SERVICE,
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [QuizController],
+  providers: [QuizService],
 })
-export class AppModule {}
+export class QuizModule {}

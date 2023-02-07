@@ -2,15 +2,15 @@ import { JwtAuthGuard } from '@app/common';
 import { APIResponse } from '@app/common/types';
 import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
-import { AppService } from './app.service';
+import { QuizService } from './quiz.service';
 
 @Controller('quiz')
-export class AppController {
-  constructor(private readonly appService: AppService) {}
+export class QuizController {
+  constructor(private readonly quizService: QuizService) {}
 
   @Get()
   serverStats(): APIResponse {
-    return this.appService.getServerStat();
+    return this.quizService.getServerStat();
   }
 
   @Post('create')

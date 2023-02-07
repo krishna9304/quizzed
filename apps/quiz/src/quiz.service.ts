@@ -4,7 +4,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
-export class AppService {
+export class QuizService {
   constructor(@Inject(AUTH_SERVICE) private authClient: ClientProxy) {}
 
   getServerStat(): APIResponse {
