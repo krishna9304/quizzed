@@ -1,5 +1,8 @@
 import {
+  BadRequestException,
+  Inject,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -11,31 +14,53 @@ import { ChildProcess, spawn } from 'child_process';
 import * as path from 'path';
 import { CreateTeacherRequest } from './dto/create-teacher.request';
 import { TeachersRepository } from './teachers.repository';
-import { Teacher } from './schemas/Teacher.schema';
+import { Teacher } from './schemas/teacher.schema';
+import { MAIL_SERVICE } from '@app/common/auth/services';
+import { ClientProxy } from '@nestjs/microservices';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly teachersRepository: TeachersRepository,
+    @Inject(MAIL_SERVICE) private mailClient: ClientProxy,
   ) {}
 
   async createUser(request: CreateUserRequest) {
-    await this.validateCreateUserRequest(request);
-    return await this.usersRepository.create(request);
+    try {
+      await this.validateCreateUserRequest(request);
+      return await this.usersRepository.create(request);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   async createTeacher(request: CreateTeacherRequest, type: string = 'teacher') {
-    await this.validateCreateUserRequest(request, type);
-    return await this.teachersRepository.create({
-      ...request,
-      regdNo:
-        'TCH' +
-        request.primaryPhone.slice(-4) +
-        request.name.slice(0, 3).toUpperCase() +
-        request.name.slice(-2).toUpperCase(),
-      password: await bcrypt.hash(request.password, 10),
-    });
+    try {
+      await this.validateCreateUserRequest(request, type);
+      const otp: number = Math.floor(100000 + Math.random() * 900000);
+      const teacher = await this.teachersRepository.create({
+        ...request,
+        regdNo:
+          'TCH' +
+          request.primaryPhone.slice(-4) +
+          request.name.slice(0, 3).toUpperCase() +
+          request.name.slice(-2).toUpperCase(),
+        password: await bcrypt.hash(request.password, 10),
+        metadata: { otp },
+      });
+      await lastValueFrom(
+        this.mailClient.emit('teacher_registered', {
+          name: request.name,
+          email: request.email,
+          otp,
+        }),
+      );
+      return teacher.regdNo;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   private async validateCreateUserRequest(
@@ -73,6 +98,24 @@ export class UsersService {
     const passwordIsValid = await bcrypt.compare(password, user.password);
     if (!passwordIsValid) {
       throw new UnauthorizedException('Credentials are not valid.');
+    }
+
+    if (user.status !== 'active') {
+      const otp: number = Math.floor(100000 + Math.random() * 900000);
+      await lastValueFrom(
+        this.mailClient.emit('teacher_registered', {
+          name: user.name,
+          email: user.email,
+          otp,
+        }),
+      );
+      await this.teachersRepository.findOneAndUpdate(
+        { regdNo: user.regdNo },
+        { metadata: { otp } },
+      );
+      throw new UnauthorizedException(
+        'Your account is not verified yet. Kindly verify it by entering the OTP received in your registered email address.',
+      );
     }
     return user;
   }
@@ -146,5 +189,30 @@ export class UsersService {
       metadata: null,
     };
     return user;
+  }
+
+  async validateOtp(data: {
+    regdNo: string;
+    otp: number;
+  }): Promise<{ statusCode: number; message: string }> {
+    try {
+      const teacher = await this.teachersRepository.findOne({
+        regdNo: data.regdNo,
+      });
+
+      if (teacher.status !== 'active') {
+        if (data.otp === teacher.metadata.otp) {
+          await this.teachersRepository.findOneAndUpdate(
+            { regdNo: data.regdNo },
+            { status: 'active', metadata: null },
+          );
+          return { message: 'OTP validated successfully.', statusCode: 200 };
+        } else return { message: 'Invalid OTP', statusCode: 401 };
+      } else {
+        return { message: 'Already verified.', statusCode: 409 };
+      }
+    } catch (error) {
+      throw new NotFoundException(error);
+    }
   }
 }

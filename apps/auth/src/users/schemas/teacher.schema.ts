@@ -24,7 +24,7 @@ export class Teacher extends AbstractDocument {
   @Prop({ required: false, default: [] })
   subjects: string[];
 
-  @Prop({ default: 'active' })
+  @Prop({ default: 'inactive' })
   status: string;
 
   @Prop({ default: new Date().toDateString() })

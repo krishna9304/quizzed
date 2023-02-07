@@ -1,12 +1,12 @@
 import { APIResponse } from '@app/common/types';
-import { Controller, Get, Post, Query, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './current-user.decorator';
 import JwtAuthGuard from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import { Teacher } from './users/schemas/Teacher.schema';
+import { Teacher } from './users/schemas/teacher.schema';
 import { User } from './users/schemas/user.schema';
 
 @Controller('auth')

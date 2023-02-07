@@ -18,7 +18,7 @@ services:
       - '8000:8000'
 
   auth:
-    container_name: quizzed-auth
+    container_name: auth
     build:
       context: .
       dockerfile: ./apps/auth/Dockerfile
@@ -34,6 +34,23 @@ services:
       - /usr/src/app/node_modules
     ports:
       - '8001:8001'
+
+  mailer:
+    container_name: mailer
+    build:
+      context: .
+      dockerfile: ./apps/mailer/Dockerfile
+      target: development
+    command: npm run start:dev mailer
+    env_file:
+      - ./apps/mailer/.env
+    depends_on:
+      - mongodb
+      - rabbitmq
+      - auth
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
 
   rabbitmq:
     container_name: rabbitmq

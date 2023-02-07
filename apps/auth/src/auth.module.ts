@@ -1,4 +1,5 @@
 import { DatabaseModule, RmqModule } from '@app/common';
+import { MAIL_SERVICE } from '@app/common/auth/services';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';

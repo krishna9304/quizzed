@@ -38,7 +38,28 @@ export class UsersController {
   @Post('teachers')
   async createTeacher(@Body() request: CreateTeacherRequest) {
     try {
-      return this.usersService.createTeacher(request);
+      const regdNo: string = await this.usersService.createTeacher(request);
+      return {
+        statusCode: 201,
+        message: `Registered successfully. Kindly verify you account to login.`,
+        regdNo,
+        error: null,
+      };
+    } catch (error) {
+      throw new HttpException('Failed to process the request.', 500, {
+        cause: new Error(error),
+      });
+    }
+  }
+
+  @Post('teachers/verify')
+  async verifyTeacher(@Body() request: { regdNo: string; otp: number }) {
+    try {
+      const res = await this.usersService.validateOtp(request);
+      return {
+        ...res,
+        error: null,
+      };
     } catch (error) {
       throw new HttpException('Failed to process the request.', 500, {
         cause: new Error(error),
