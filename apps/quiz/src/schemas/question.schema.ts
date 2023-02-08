@@ -15,11 +15,14 @@ export class Question extends AbstractDocument {
   @Prop({ required: true })
   options: string[];
 
-  @Prop({ required: true })
+  @Prop({ required: true, min: 0, max: 3 })
   correct_option: number;
 
   @Prop({ required: true })
   subject: string;
+
+  @Prop({ required: true })
+  created_by: string;
 
   @Prop({ default: new Date().toDateString() })
   created_at: string;

@@ -9,6 +9,11 @@ export interface StudentsAppeared {
   [regdNo: string]: AttemptedQuestions;
 }
 
+export const quiz_status = {
+  DRAFT: 'draft',
+  LIVE: 'live',
+  COMPLETED: 'completed',
+};
 @Schema({ versionKey: false })
 export class Quiz extends AbstractDocument {
   @Prop({ required: true, unique: true })
@@ -47,13 +52,13 @@ export class Quiz extends AbstractDocument {
   @Prop({ required: true })
   duration: number;
 
-  @Prop({ required: false, default: {} })
+  @Prop({ required: false, default: {}, type: Object })
   total_students_appeared: StudentsAppeared;
 
   @Prop({ required: false, default: [], ref: 'Question' })
   questions: Types.ObjectId[];
 
-  @Prop({ default: 'inactive' })
+  @Prop({ default: quiz_status.DRAFT })
   status: string;
 
   @Prop({ default: new Date().toDateString() })

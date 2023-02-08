@@ -6,9 +6,17 @@ import * as Joi from 'joi';
 import { DatabaseModule, RmqModule } from '@app/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AUTH_SERVICE } from '@app/common/auth/services';
+import { Quiz, QuizSchema } from './schemas/quiz.schema';
+import { QuizRepository } from './repositories/quiz.repository';
+import { Question, QuestionSchema } from './schemas/question.schema';
+import { QuestionRepository } from './repositories/question.repository';
 
 @Module({
   imports: [
+    MongooseModule.forFeature([{ name: Quiz.name, schema: QuizSchema }]),
+    MongooseModule.forFeature([
+      { name: Question.name, schema: QuestionSchema },
+    ]),
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: Joi.object({
@@ -24,6 +32,6 @@ import { AUTH_SERVICE } from '@app/common/auth/services';
     }),
   ],
   controllers: [QuizController],
-  providers: [QuizService],
+  providers: [QuizService, QuizRepository, QuestionRepository],
 })
 export class QuizModule {}

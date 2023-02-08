@@ -3,9 +3,9 @@ import { Types } from 'mongoose';
 import { StudentsAppeared } from '../schemas/quiz.schema';
 
 export class CreateQuizRequest {
-  quiz_id?: string;
+  quiz_id: string;
 
-  conducted_by?: string;
+  conducted_by: string;
 
   @IsNotEmpty()
   @IsString()
@@ -23,8 +23,6 @@ export class CreateQuizRequest {
   @IsString()
   section: string;
 
-  @IsNotEmpty()
-  @IsString()
   branch: string;
 
   @IsNotEmpty()
@@ -39,21 +37,21 @@ export class CreateQuizRequest {
   @IsNumber()
   per_question_marks: number;
 
-  total_marks?: number;
+  total_marks: number;
 
   @IsNotEmpty()
   @IsNumber()
   duration: number;
 
-  total_students_appeared?: StudentsAppeared;
+  total_students_appeared: StudentsAppeared;
 
-  questions?: Types.ObjectId[];
+  questions: Types.ObjectId[];
 
-  status?: string;
+  status: string;
 
-  created_at?: string;
+  created_at: string;
 
-  updated_at?: string;
+  updated_at: string;
 
-  metadata?: any;
+  metadata: any;
 }
