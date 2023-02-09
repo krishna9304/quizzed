@@ -9,3 +9,5 @@ export * from './schemas/user.schema';
 export * from './schemas/teacher.schema';
 export * from './repositories/users.repository';
 export * from './repositories/teachers.repository';
+export * from './middlewares/azure-blob.upload';
+export * from './middlewares/s3.upload';
