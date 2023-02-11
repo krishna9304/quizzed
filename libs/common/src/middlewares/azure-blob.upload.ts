@@ -6,12 +6,17 @@ import {
   BlobClient,
 } from '@azure/storage-blob';
 import { ConfigService } from '@nestjs/config';
+import { NextFunction, Response } from 'express';
 
 @Injectable()
 export class AzureBlobStorageMiddleware implements NestMiddleware {
   constructor(private readonly configService: ConfigService) {}
 
-  async use(@Req() req, @Res() res, @Next() next) {
+  async use(
+    @Req() req: multer.Request,
+    @Res() res: Response,
+    @Next() next: NextFunction,
+  ) {
     const connectionString = this.configService.get<string>(
       'AZURE_BLOB_CONNECTION_STRING',
     );

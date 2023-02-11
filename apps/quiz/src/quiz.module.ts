@@ -3,7 +3,14 @@ import { QuizController } from './quiz.controller';
 import { QuizService } from './quiz.service';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
-import { DatabaseModule, RmqModule } from '@app/common';
+import {
+  AuthModule,
+  AzureBlobStorageMiddleware,
+  DatabaseModule,
+  MiddlewareModule,
+  RmqModule,
+  S3StorageMiddleware,
+} from '@app/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AUTH_SERVICE } from '@app/common/auth/services';
 import { Quiz, QuizSchema } from './schemas/quiz.schema';
@@ -22,6 +29,8 @@ import { QuestionRepository } from './repositories/question.repository';
       validationSchema: Joi.object({
         MONGODB_URI: Joi.string().required(),
         PORT: Joi.number().required(),
+        AZURE_BLOB_CONNECTION_STRING: Joi.string().required(),
+        AZURE_BLOB_CONTAINER_NAME: Joi.string().required(),
       }),
       envFilePath: './apps/quiz/.env',
     }),
@@ -30,8 +39,16 @@ import { QuestionRepository } from './repositories/question.repository';
     RmqModule.register({
       name: AUTH_SERVICE,
     }),
+    AuthModule,
+    MiddlewareModule,
   ],
   controllers: [QuizController],
-  providers: [QuizService, QuizRepository, QuestionRepository],
+  providers: [
+    QuizService,
+    QuizRepository,
+    QuestionRepository,
+    AzureBlobStorageMiddleware,
+    S3StorageMiddleware,
+  ],
 })
 export class QuizModule {}

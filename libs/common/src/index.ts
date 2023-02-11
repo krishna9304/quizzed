@@ -11,3 +11,5 @@ export * from './repositories/users.repository';
 export * from './repositories/teachers.repository';
 export * from './middlewares/azure-blob.upload';
 export * from './middlewares/s3.upload';
+export * from './middlewares/middleware.module';
+export * from './pipes/uppercase.pipe';

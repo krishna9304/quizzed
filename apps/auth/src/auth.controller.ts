@@ -1,6 +1,6 @@
-import { Teacher, User } from '@app/common';
+import { Teacher, User, JwtAuthGuard as JWTVerifyGuard } from '@app/common';
 import { APIResponse } from '@app/common/types';
-import { Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Res, UseGuards } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -36,6 +36,12 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @MessagePattern('validate_user')
   async validateUser(@CurrentUser() user: User | Teacher) {
+    return user;
+  }
+
+  @UseGuards(JWTVerifyGuard)
+  @Get('self')
+  async getSelf(@CurrentUser() user: User | Teacher) {
     return user;
   }
 }

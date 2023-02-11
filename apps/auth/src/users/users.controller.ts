@@ -1,4 +1,13 @@
-import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
+import { JwtAuthGuard, UppercasePipe } from '@app/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { CreateTeacherRequest } from './dto/create-teacher.request';
 import { CreateUserRequest } from './dto/create-user.request';
 import { UsersService } from './users.service';
@@ -43,5 +52,13 @@ export class UsersController {
   @Post('request-regd-no')
   async requestRegdNo(@Body() request: { email: string }) {
     return this.usersService.getRegdNo(request.email);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('users/:regdNo')
+  async getUserByRegdNo(@Param('regdNo', UppercasePipe) regdNo: string) {
+    let type = 'student';
+    if (regdNo?.slice(0, 3) === 'TCH') type = 'teacher';
+    return this.usersService.getUser({ regdNo }, type);
   }
 }

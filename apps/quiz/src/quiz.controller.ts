@@ -1,4 +1,4 @@
-import { JwtAuthGuard } from '@app/common';
+import { JwtAuthGuard, UppercasePipe } from '@app/common';
 import { APIResponse } from '@app/common/types';
 import {
   BadRequestException,
@@ -15,7 +15,6 @@ import { Request } from 'express';
 import { Types } from 'mongoose';
 import { CreateQuestionRequest } from './dto/create-question.request';
 import { CreateQuizRequest } from './dto/create-quiz.request';
-import { UppercasePipe } from './pipes/uppercase.pipe';
 import { QuizService } from './quiz.service';
 
 @Controller('quiz')

@@ -1,6 +1,6 @@
 import { Teacher } from '@app/common';
 import { APIResponse } from '@app/common/types';
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { isValidObjectId, Types } from 'mongoose';
 import { CreateQuestionRequest } from './dto/create-question.request';
