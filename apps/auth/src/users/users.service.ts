@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Inject,
   Injectable,
   NotFoundException,
@@ -43,6 +44,7 @@ export class UsersService {
     const otp: number = Math.floor(100000 + Math.random() * 900000);
     const teacher = await this.teachersRepository.create({
       ...request,
+      email: request.email.toLowerCase(),
       regdNo:
         'TCH' +
         request.primaryPhone.slice(-4) +
@@ -179,7 +181,7 @@ export class UsersService {
     password: string,
   ): Promise<CreateUserRequest> {
     const user: CreateUserRequest = {
-      email: rawUser.detail[0].semailid,
+      email: String(rawUser.detail[0].semailid).toLowerCase(),
       regdNo: rawUser.detail[0].enrollmentno,
       name: rawUser.detail[0].name,
       admissionYear: rawUser.detail[0].admissionyear,
@@ -203,9 +205,7 @@ export class UsersService {
   async validateAuthOtp(data: {
     regdNo: string;
     otp: number;
-  }): Promise<
-    { statusCode: number; message: string; error: any } | Teacher | any
-  > {
+  }): Promise<Teacher | any> {
     const teacher = await this.teachersRepository.findOne({
       regdNo: data.regdNo,
     });
@@ -220,10 +220,8 @@ export class UsersService {
         delete updatedDoc.password;
         delete updatedDoc.metadata;
         return { ...updatedDoc, type: 'teacher' };
-      } else return { message: 'Invalid OTP', statusCode: 401, error: null };
-    } else {
-      return { message: 'Already verified.', statusCode: 409, error: null };
-    }
+      } else throw new UnauthorizedException('Invalid OTP');
+    } else throw new ConflictException('Already verified.');
   }
 
   async getRegdNo(email: string) {

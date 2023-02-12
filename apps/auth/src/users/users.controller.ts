@@ -1,4 +1,4 @@
-import { JwtAuthGuard, UppercasePipe } from '@app/common';
+import { JwtAuthGuard, LowercasePipe, UppercasePipe } from '@app/common';
 import {
   Body,
   Controller,
@@ -38,7 +38,7 @@ export class UsersController {
     const regdNo: string = await this.usersService.createTeacher(request);
     return {
       statusCode: 201,
-      message: `Registered successfully. Kindly verify you account to login.`,
+      message: `Registered successfully. Enter the OTP received in email to login.`,
       regdNo,
       error: null,
     };
@@ -49,9 +49,9 @@ export class UsersController {
     return this.usersService.validateAuthOtp(request);
   }
 
-  @Post('request-regd-no')
-  async requestRegdNo(@Body() request: { email: string }) {
-    return this.usersService.getRegdNo(request.email);
+  @Get('request-regd-no/:email')
+  async requestRegdNo(@Param('email', LowercasePipe) email: string) {
+    return this.usersService.getRegdNo(email);
   }
 
   @UseGuards(JwtAuthGuard)
