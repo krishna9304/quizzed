@@ -1,5 +1,5 @@
 import { Injectable, NestMiddleware, Next, Req, Res } from '@nestjs/common';
-import multer from 'multer';
+import * as multer from 'multer';
 import {
   BlobServiceClient,
   ContainerClient,
@@ -12,11 +12,7 @@ import { NextFunction, Response } from 'express';
 export class AzureBlobStorageMiddleware implements NestMiddleware {
   constructor(private readonly configService: ConfigService) {}
 
-  async use(
-    @Req() req: multer.Request,
-    @Res() res: Response,
-    @Next() next: NextFunction,
-  ) {
+  async use(@Req() req: any, @Res() res: Response, @Next() next: NextFunction) {
     const connectionString = this.configService.get<string>(
       'AZURE_BLOB_CONNECTION_STRING',
     );
@@ -38,18 +34,20 @@ export class AzureBlobStorageMiddleware implements NestMiddleware {
         return;
       }
 
-      const file = req.file;
-      const blobName = `${Date.now()}-${file.originalname}`;
-      const blobClient: BlobClient = containerClient.getBlobClient(blobName);
+      if (req.file) {
+        const file = req.file;
+        const blobName = `${Date.now()}-${file.originalname}`;
+        const blobClient: BlobClient = containerClient.getBlobClient(blobName);
 
-      try {
-        const blockBlobClient = blobClient.getBlockBlobClient();
-        await blockBlobClient.upload(file.buffer, file.size);
-        req.file.url = blockBlobClient.url;
-        next();
-      } catch (err) {
-        next(err);
-      }
+        try {
+          const blockBlobClient = blobClient.getBlockBlobClient();
+          await blockBlobClient.upload(file.buffer, file.size);
+          req.file.url = blockBlobClient.url;
+          next();
+        } catch (err) {
+          next(err);
+        }
+      } else next();
     });
   }
 }

@@ -2,6 +2,8 @@ import {
   DatabaseModule,
   RmqModule,
   AuthModule as AuthGlobal,
+  HttpExceptionFilter,
+  MiddlewareModule,
 } from '@app/common';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -17,6 +19,7 @@ import { UsersModule } from './users/users.module';
   imports: [
     DatabaseModule,
     UsersModule,
+    MiddlewareModule,
     RmqModule,
     AuthGlobal,
     ConfigModule.forRoot({
@@ -41,6 +44,11 @@ import { UsersModule } from './users/users.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    { provide: 'HTTP_EXCEPTION_FILTER', useClass: HttpExceptionFilter },
+  ],
 })
 export class AuthModule {}

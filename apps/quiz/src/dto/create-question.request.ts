@@ -1,15 +1,23 @@
+import { Transform } from 'class-transformer';
 import {
   ArrayMaxSize,
   ArrayMinSize,
   ArrayNotEmpty,
   IsArray,
   IsNotEmpty,
-  IsNumber,
+  IsNumberString,
   IsString,
-  Max,
-  Min,
+  Validate,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
 } from 'class-validator';
 
+@ValidatorConstraint({ name: 'isCorrectOption' })
+export class IsCorrectOption implements ValidatorConstraintInterface {
+  validate(value: string) {
+    return ['0', '1', '2', '3'].includes(value);
+  }
+}
 export class CreateQuestionRequest {
   question_id: string;
 
@@ -25,10 +33,11 @@ export class CreateQuestionRequest {
   @ArrayMinSize(2)
   options: string[];
 
-  @IsNumber()
   @IsNotEmpty()
-  @Min(0)
-  @Max(3)
+  @IsNumberString()
+  @Validate(IsCorrectOption, {
+    message: 'correct_option must be one of: 0, 1, 2, 3',
+  })
   correct_option: number;
 
   @IsString()

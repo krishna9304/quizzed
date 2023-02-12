@@ -60,7 +60,7 @@ services:
 
   mongodb:
     image: mongo
-    container_name: quizzed-mongo-primary
+    container_name: mongo-primary
     ports:
       - '27017:27017'
     volumes:

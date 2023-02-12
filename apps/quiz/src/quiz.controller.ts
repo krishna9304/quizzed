@@ -9,8 +9,11 @@ import {
   Post,
   Put,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { Types } from 'mongoose';
 import { CreateQuestionRequest } from './dto/create-question.request';
@@ -37,14 +40,17 @@ export class QuizController {
 
   @Post('questions')
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
   async createNewQuestion(
+    @UploadedFile() file: Express.Multer.File,
     @Req() req: Request,
     @Body() request: CreateQuestionRequest,
   ) {
     const user: any = req.user;
     if (user.type !== 'teacher')
       throw new BadRequestException('Only teachers can create questions');
-    return this.quizService.createQuestion(request, user);
+
+    return this.quizService.createQuestion(request, file, user);
   }
 
   @Put('add-question/:quiz_id')

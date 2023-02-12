@@ -1,6 +1,10 @@
-import { Teacher } from '@app/common';
+import { AzureBlobUtil, Teacher } from '@app/common';
 import { APIResponse } from '@app/common/types';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { isValidObjectId, Types } from 'mongoose';
 import { CreateQuestionRequest } from './dto/create-question.request';
@@ -14,6 +18,7 @@ export class QuizService {
   constructor(
     private readonly quizRepository: QuizRepository,
     private readonly questionRepository: QuestionRepository,
+    private readonly azureBlobUtil: AzureBlobUtil,
   ) {}
 
   getServerStat(): APIResponse {
@@ -79,13 +84,32 @@ export class QuizService {
     return true;
   }
 
-  async createQuestion(request: CreateQuestionRequest, user: Teacher) {
-    return await this.questionRepository.create({
-      ...request,
-      question_id:
-        'QUES' + request.subject + randomUUID().split('-')[0].toUpperCase(),
-      created_by: user.regdNo,
-    });
+  async createQuestion(
+    request: CreateQuestionRequest,
+    file: Express.Multer.File,
+    user: Teacher,
+  ) {
+    if (request.options.length <= request.correct_option)
+      throw new BadRequestException('Invalid combination of parameters.');
+
+    const session = await this.questionRepository.startTransaction();
+    try {
+      if (file) {
+        const url = await this.azureBlobUtil.uploadImage(file);
+        request.question_img = url;
+      }
+      const quiz = await this.questionRepository.create({
+        ...request,
+        question_id:
+          'QUES' + request.subject + randomUUID().split('-')[0].toUpperCase(),
+        created_by: user.regdNo,
+      });
+      await session.commitTransaction();
+      return quiz;
+    } catch (error) {
+      await session.abortTransaction();
+      throw new InternalServerErrorException(error);
+    }
   }
 
   async mapQuestionToQuiz(

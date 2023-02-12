@@ -5,11 +5,11 @@ import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
 import {
   AuthModule,
-  AzureBlobStorageMiddleware,
+  AzureBlobUtil,
   DatabaseModule,
-  MiddlewareModule,
+  HttpExceptionFilter,
   RmqModule,
-  S3StorageMiddleware,
+  UtilModule,
 } from '@app/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AUTH_SERVICE } from '@app/common/auth/services';
@@ -40,15 +40,15 @@ import { QuestionRepository } from './repositories/question.repository';
       name: AUTH_SERVICE,
     }),
     AuthModule,
-    MiddlewareModule,
+    UtilModule,
   ],
   controllers: [QuizController],
   providers: [
     QuizService,
     QuizRepository,
     QuestionRepository,
-    AzureBlobStorageMiddleware,
-    S3StorageMiddleware,
+    AzureBlobUtil,
+    { provide: 'HTTP_EXCEPTION_FILTER', useClass: HttpExceptionFilter },
   ],
 })
 export class QuizModule {}
