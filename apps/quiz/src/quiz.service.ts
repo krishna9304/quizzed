@@ -1,10 +1,6 @@
 import { AzureBlobUtil, Teacher } from '@app/common';
 import { APIResponse } from '@app/common/types';
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { isValidObjectId, Types } from 'mongoose';
 import { CreateQuestionRequest } from './dto/create-question.request';
@@ -108,7 +104,7 @@ export class QuizService {
       return quiz;
     } catch (error) {
       await session.abortTransaction();
-      throw new InternalServerErrorException(error);
+      throw new BadRequestException(error.message);
     }
   }
 
