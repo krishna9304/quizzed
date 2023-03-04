@@ -1,6 +1,6 @@
+import { StudentsAppeared } from '@app/common';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { Types } from 'mongoose';
-import { StudentsAppeared } from '../schemas/quiz.schema';
 
 export class CreateQuizRequest {
   quiz_id: string;

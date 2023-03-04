@@ -44,6 +44,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/mailer/tsconfig.app.json"
       }
+    },
+    "live": {
+      "type": "application",
+      "root": "apps/live",
+      "entryFile": "main",
+      "sourceRoot": "apps/live/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/live/tsconfig.app.json"
+      }
     }
   }
 }

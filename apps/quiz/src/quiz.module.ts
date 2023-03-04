@@ -8,15 +8,17 @@ import {
   AzureBlobUtil,
   DatabaseModule,
   HttpExceptionFilter,
+  Question,
+  QuestionRepository,
+  QuestionSchema,
+  Quiz,
+  QuizRepository,
+  QuizSchema,
   RmqModule,
   UtilModule,
 } from '@app/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AUTH_SERVICE } from '@app/common/auth/services';
-import { Quiz, QuizSchema } from './schemas/quiz.schema';
-import { QuizRepository } from './repositories/quiz.repository';
-import { Question, QuestionSchema } from './schemas/question.schema';
-import { QuestionRepository } from './repositories/question.repository';
 
 @Module({
   imports: [
@@ -35,7 +37,6 @@ import { QuestionRepository } from './repositories/question.repository';
       envFilePath: './apps/quiz/.env',
     }),
     DatabaseModule,
-    MongooseModule.forFeature([]),
     RmqModule.register({
       name: AUTH_SERVICE,
     }),

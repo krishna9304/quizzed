@@ -1,14 +1,18 @@
-import { AzureBlobUtil, Teacher } from '@app/common';
+import {
+  AzureBlobUtil,
+  Question,
+  QuestionRepository,
+  Quiz,
+  QuizRepository,
+  quiz_status,
+  Teacher,
+} from '@app/common';
 import { APIResponse } from '@app/common/types';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { isValidObjectId, Types } from 'mongoose';
 import { CreateQuestionRequest } from './dto/create-question.request';
 import { CreateQuizRequest } from './dto/create-quiz.request';
-import { QuestionRepository } from './repositories/question.repository';
-import { QuizRepository } from './repositories/quiz.repository';
-import { Question } from './schemas/question.schema';
-import { Quiz, quiz_status } from './schemas/quiz.schema';
 
 @Injectable()
 export class QuizService {
@@ -152,6 +156,12 @@ export class QuizService {
 
   async changeQuizStateToLive(quiz_id: string): Promise<APIResponse> {
     const quiz = await this.quizRepository.findOne({ quiz_id });
+    if (quiz.questions.length !== quiz.total_questions) {
+      const questionsLeft = quiz.total_questions - quiz.questions.length;
+      throw new BadRequestException(
+        `You need to add ${questionsLeft} more questions to the quiz in order to publish it.`,
+      );
+    }
     if (quiz.status === quiz_status.DRAFT) {
       const updatedQuiz = await this.quizRepository.findOneAndUpdate(
         { quiz_id },

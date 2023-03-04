@@ -1,4 +1,24 @@
 services:
+  live:
+    container_name: live
+    build:
+      context: .
+      dockerfile: ./apps/live/Dockerfile
+      target: development
+    command: npm run start:dev live
+    env_file:
+      - ./apps/live/.env
+    depends_on:
+      - mongodb
+      - rabbitmq
+      - auth
+      - quiz
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - '8002:8002'
+
   quiz:
     container_name: quiz
     build:
@@ -11,6 +31,7 @@ services:
     depends_on:
       - mongodb
       - rabbitmq
+      - auth
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
