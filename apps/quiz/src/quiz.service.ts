@@ -7,7 +7,8 @@ import { CreateQuestionRequest } from './dto/create-question.request';
 import { CreateQuizRequest } from './dto/create-quiz.request';
 import { QuestionRepository } from './repositories/question.repository';
 import { QuizRepository } from './repositories/quiz.repository';
-import { quiz_status } from './schemas/quiz.schema';
+import { Question } from './schemas/question.schema';
+import { Quiz, quiz_status } from './schemas/quiz.schema';
 
 @Injectable()
 export class QuizService {
@@ -52,9 +53,10 @@ export class QuizService {
       total_students_appeared: {},
       questions: [],
       status: quiz_status.DRAFT,
-      created_at: new Date().toDateString(),
-      updated_at: new Date().toDateString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
       metadata: null,
+      startTime: null,
     };
     return quiz_obj;
   }
@@ -113,22 +115,64 @@ export class QuizService {
     question_db_id: Types.ObjectId,
   ): Promise<APIResponse> {
     const quiz = await this.quizRepository.findOne({ quiz_id });
+    if (quiz.questions.includes(question_db_id)) {
+      throw new BadRequestException(
+        'This question is already mapped to the quiz.',
+      );
+    }
     if (quiz.status !== quiz_status.DRAFT) {
       throw new BadRequestException('Quiz is not in draft mode!');
     }
     if (quiz.questions.length < quiz.total_questions) {
-      await this.quizRepository.findOneAndUpdate(
+      const updatedQuiz = await this.quizRepository.findOneAndUpdate(
         { quiz_id },
-        { $addToSet: { questions: question_db_id } },
+        {
+          $addToSet: { questions: question_db_id },
+          updated_at: new Date().toISOString(),
+        },
       );
       return {
         statusCode: 200,
         message: 'Question added to quiz with Quiz ID: ' + quiz_id,
-        data: null,
+        data: updatedQuiz,
         errors: [],
       };
     } else {
       throw new BadRequestException('Maximum questions reached!');
+    }
+  }
+
+  async getQuizByQuizId(quiz_id: string): Promise<Quiz> {
+    return this.quizRepository.findOne({ quiz_id });
+  }
+
+  async getQuestionByQuestionId(question_id: string): Promise<Question> {
+    return this.questionRepository.findOne({ question_id });
+  }
+
+  async changeQuizStateToLive(quiz_id: string): Promise<APIResponse> {
+    const quiz = await this.quizRepository.findOne({ quiz_id });
+    if (quiz.status === quiz_status.DRAFT) {
+      const updatedQuiz = await this.quizRepository.findOneAndUpdate(
+        { quiz_id },
+        {
+          status: quiz_status.LIVE,
+          startTime: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      );
+      return {
+        statusCode: 200,
+        data: updatedQuiz,
+        errors: [],
+        message: `Yay! Your quiz with quiz id "${quiz_id}" is now live.`,
+      };
+    } else if (quiz.status === quiz_status.LIVE) {
+      throw new BadRequestException('This quiz is already live.');
+    } else {
+      throw new BadRequestException(
+        "This quiz's status is completed, you cannot re-publish it.",
+      );
     }
   }
 }

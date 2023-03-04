@@ -52,6 +52,9 @@ export class Quiz extends AbstractDocument {
   @Prop({ required: true })
   duration: number;
 
+  @Prop({ default: null })
+  startTime: string;
+
   @Prop({ required: false, default: {}, type: Object })
   total_students_appeared: StudentsAppeared;
 

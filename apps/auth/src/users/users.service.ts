@@ -39,7 +39,7 @@ export class UsersService {
     return { ...user, type: 'student' };
   }
 
-  async createTeacher(request: CreateTeacherRequest, type: string = 'teacher') {
+  async createTeacher(request: CreateTeacherRequest, type = 'teacher') {
     await this.validateCreateUserRequest(request, type);
     const otp: number = Math.floor(100000 + Math.random() * 900000);
     const teacher = await this.teachersRepository.create({
@@ -65,7 +65,7 @@ export class UsersService {
 
   async validateCreateUserRequest(
     request: Partial<CreateUserRequest | CreateTeacherRequest>,
-    type: string = 'student',
+    type = 'student',
   ) {
     let user: User | Teacher;
     try {
@@ -87,11 +87,7 @@ export class UsersService {
     }
   }
 
-  async validateUser(
-    regdNo: string,
-    password: string,
-    type: string = 'student',
-  ) {
+  async validateUser(regdNo: string, password: string, type = 'student') {
     const user = await this[
       type === 'teacher' ? 'teachersRepository' : 'usersRepository'
     ].findOne({ regdNo });

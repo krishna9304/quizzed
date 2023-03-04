@@ -43,6 +43,8 @@ export class CreateQuizRequest {
   @IsNumber()
   duration: number;
 
+  startTime: string;
+
   total_students_appeared: StudentsAppeared;
 
   questions: Types.ObjectId[];

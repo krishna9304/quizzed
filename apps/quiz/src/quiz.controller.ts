@@ -29,6 +29,20 @@ export class QuizController {
     return this.quizService.getServerStat();
   }
 
+  @Get(':quiz_id')
+  @UseGuards(JwtAuthGuard)
+  async getQuizDetails(@Param('quiz_id', UppercasePipe) quiz_id: string) {
+    return this.quizService.getQuizByQuizId(quiz_id);
+  }
+
+  @Get('questions/:question_id')
+  @UseGuards(JwtAuthGuard)
+  async getQuestionDetails(
+    @Param('question_id', UppercasePipe) question_id: string,
+  ) {
+    return this.quizService.getQuestionByQuestionId(question_id);
+  }
+
   @Post('create')
   @UseGuards(JwtAuthGuard)
   async createNewQuiz(@Req() req: Request, @Body() request: CreateQuizRequest) {
@@ -77,5 +91,22 @@ export class QuizController {
       quiz_id,
       new Types.ObjectId(question_db_id),
     );
+  }
+
+  @Put('publish')
+  @UseGuards(JwtAuthGuard)
+  async publishQuiz(
+    @Req() req: Request,
+    @Body('quiz_id', UppercasePipe) quiz_id: string,
+  ) {
+    const valid = await this.quizService.isValidQuizId(quiz_id);
+    if (!valid)
+      throw new BadRequestException('Please provide a valid quiz id.');
+
+    const user: any = req.user;
+    if (user.type !== 'teacher')
+      throw new BadRequestException('Only teachers can publish quizzes');
+
+    return this.quizService.changeQuizStateToLive(quiz_id);
   }
 }
