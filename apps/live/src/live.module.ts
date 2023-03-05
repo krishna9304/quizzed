@@ -4,6 +4,9 @@ import {
   Quiz,
   QuizRepository,
   QuizSchema,
+  Quizstats,
+  QuizStatsRepository,
+  QuizstatsSchema,
   RmqModule,
 } from '@app/common';
 import { Module } from '@nestjs/common';
@@ -16,6 +19,9 @@ import { LiveService } from './live.service';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Quiz.name, schema: QuizSchema }]),
+    MongooseModule.forFeature([
+      { name: Quizstats.name, schema: QuizstatsSchema },
+    ]),
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: Joi.object({
@@ -30,6 +36,6 @@ import { LiveService } from './live.service';
     AuthModule,
   ],
   controllers: [LiveController],
-  providers: [LiveService, QuizRepository],
+  providers: [LiveService, QuizRepository, QuizStatsRepository],
 })
 export class LiveModule {}

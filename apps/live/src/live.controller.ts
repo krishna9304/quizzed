@@ -12,8 +12,8 @@ export class LiveController {
   ) {}
 
   @EventPattern('join_quiz')
-  async sendOtp(@Payload() data: JoinQuizRequest, @Ctx() context: RmqContext) {
-    console.log(data);
+  async joinQuiz(@Payload() data: JoinQuizRequest, @Ctx() context: RmqContext) {
+    await this.liveService.createQuizStatsForStudent(data);
     this.rmqService.ack(context);
   }
 }

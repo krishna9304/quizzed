@@ -14,6 +14,9 @@ import {
   Quiz,
   QuizRepository,
   QuizSchema,
+  Quizstats,
+  QuizStatsRepository,
+  QuizstatsSchema,
   RmqModule,
   UtilModule,
 } from '@app/common';
@@ -25,6 +28,9 @@ import { AUTH_SERVICE, LIVE_SERVICE } from '@app/common/auth/services';
     MongooseModule.forFeature([{ name: Quiz.name, schema: QuizSchema }]),
     MongooseModule.forFeature([
       { name: Question.name, schema: QuestionSchema },
+    ]),
+    MongooseModule.forFeature([
+      { name: Quizstats.name, schema: QuizstatsSchema },
     ]),
     ConfigModule.forRoot({
       isGlobal: true,
@@ -51,6 +57,7 @@ import { AUTH_SERVICE, LIVE_SERVICE } from '@app/common/auth/services';
     QuizService,
     QuizRepository,
     QuestionRepository,
+    QuizStatsRepository,
     AzureBlobUtil,
     { provide: 'HTTP_EXCEPTION_FILTER', useClass: HttpExceptionFilter },
   ],

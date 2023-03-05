@@ -14,22 +14,25 @@ export class Quizstats extends AbstractDocument {
   quiz_id: string;
 
   @Prop({ default: false })
-  completed: boolean;
+  completed?: boolean;
+
+  @Prop({ default: new Date().toISOString() })
+  start_time?: string;
 
   @Prop({ default: null })
-  finish_time: string;
+  finish_time?: string;
 
   @Prop({ default: [] })
-  questions_attempted_details: QuestionsAttemptedDetails[];
+  questions_attempted_details?: QuestionsAttemptedDetails[];
 
   @Prop({ default: new Date().toISOString() })
-  created_at: string;
+  created_at?: string;
 
   @Prop({ default: new Date().toISOString() })
-  updated_at: string;
+  updated_at?: string;
 
   @Prop({ default: null, type: Object })
-  metadata: any;
+  metadata?: any;
 }
 
 export const QuizstatsSchema = SchemaFactory.createForClass(Quizstats);

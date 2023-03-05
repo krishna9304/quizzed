@@ -4,12 +4,18 @@ import {
   QuestionRepository,
   Quiz,
   QuizRepository,
+  QuizStatsRepository,
   quiz_status,
   Teacher,
 } from '@app/common';
 import { LIVE_SERVICE } from '@app/common/auth/services';
 import { APIResponse } from '@app/common/types';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { randomUUID } from 'crypto';
 import { isValidObjectId, Types } from 'mongoose';
@@ -22,6 +28,7 @@ export class QuizService {
   constructor(
     private readonly quizRepository: QuizRepository,
     private readonly questionRepository: QuestionRepository,
+    private readonly quizStatsRepository: QuizStatsRepository,
     private readonly azureBlobUtil: AzureBlobUtil,
     @Inject(LIVE_SERVICE) private liveClient: ClientProxy,
   ) {}
@@ -58,7 +65,7 @@ export class QuizService {
       conducted_by: user.regdNo,
       branch: request.section.split('-')[0],
       total_marks: request.total_questions * request.per_question_marks,
-      total_students_appeared: {},
+      appeared_student_details: [],
       questions: [],
       status: quiz_status.DRAFT,
       created_at: new Date().toISOString(),
@@ -190,12 +197,39 @@ export class QuizService {
     }
   }
 
-  async joinQuizByQuizId(quiz_id: string, student_regdNo: string) {
-    await lastValueFrom(
-      this.liveClient.emit('join_quiz', {
-        quiz_id,
-        student_regdNo,
-      }),
-    );
+  async joinQuizByQuizId(
+    quiz_id: string,
+    student_regdNo: string,
+  ): Promise<APIResponse> {
+    const quiz = await this.quizRepository.findOne({ quiz_id });
+    if (quiz.status === quiz_status.COMPLETED)
+      throw new BadRequestException('Quiz is expired!');
+
+    if (quiz.status !== quiz_status.LIVE)
+      throw new BadRequestException('Quiz is not live yet!');
+
+    const alreadyJoined = await this.quizStatsRepository.exists({
+      $and: [{ student_regdNo: student_regdNo }, { quiz_id: quiz_id }],
+    });
+    if (alreadyJoined)
+      throw new BadRequestException(
+        `You have already joined the quiz ${quiz_id}`,
+      );
+    try {
+      await lastValueFrom(
+        this.liveClient.emit('join_quiz', {
+          quiz_id,
+          student_regdNo,
+        }),
+      );
+      return {
+        statusCode: 200,
+        message: 'Your quiz has been started.',
+        data: null,
+        errors: [],
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
   }
 }

@@ -1,4 +1,3 @@
-import { StudentsAppeared } from '@app/common';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { Types } from 'mongoose';
 
@@ -45,7 +44,7 @@ export class CreateQuizRequest {
 
   startTime: string;
 
-  total_students_appeared: StudentsAppeared;
+  appeared_student_details: Types.ObjectId[];
 
   questions: Types.ObjectId[];
 
