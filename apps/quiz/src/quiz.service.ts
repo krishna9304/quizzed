@@ -15,6 +15,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { randomUUID } from 'crypto';
@@ -22,6 +23,7 @@ import { isValidObjectId, Types } from 'mongoose';
 import { lastValueFrom } from 'rxjs';
 import { CreateQuestionRequest } from './dto/create-question.request';
 import { CreateQuizRequest } from './dto/create-quiz.request';
+import * as cron from 'node-cron';
 
 @Injectable()
 export class QuizService {
@@ -31,7 +33,27 @@ export class QuizService {
     private readonly quizStatsRepository: QuizStatsRepository,
     private readonly azureBlobUtil: AzureBlobUtil,
     @Inject(LIVE_SERVICE) private liveClient: ClientProxy,
-  ) {}
+  ) {
+    cron.schedule('* * * * *', async () => {
+      this.logger.log('Checking for live quizzes');
+      try {
+        const quizzes: Quiz[] = await this.quizRepository.findAllLiveQuizzes();
+        quizzes.forEach(async (quiz) => {
+          const now = Date.now();
+          const quizEndTime =
+            new Date(quiz.startTime).getTime() + quiz.duration * 60 * 1000;
+
+          if (now >= quizEndTime) {
+            await this.updateQuizStatus(quiz._id.toString());
+          }
+        });
+      } catch (error) {
+        throw new InternalServerErrorException(error.message);
+      }
+    });
+  }
+
+  protected readonly logger = new Logger(QuizService.name);
 
   getServerStat(): APIResponse {
     return {
@@ -253,5 +275,16 @@ export class QuizService {
       remainingMinutes: remainingMin,
       remainingSeconds: remainingSec,
     };
+  }
+
+  async updateQuizStatus(quizId: string) {
+    const updatedQuiz = await this.quizRepository.findOneAndUpdate(
+      { _id: new Types.ObjectId(quizId) },
+      { status: quiz_status.COMPLETED },
+    );
+    const quizStats = await this.quizStatsRepository.find({
+      quiz_id: updatedQuiz.quiz_id,
+    });
+    await this.quizStatsRepository.bulkUpdateQuizStats(quizStats);
   }
 }
