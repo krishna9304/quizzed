@@ -185,4 +185,25 @@ export class QuizService {
       );
     }
   }
+  async giveRemainingTime(quiz_id: string) {
+    const quizDetail = await this.quizRepository.findOne({ quiz_id });
+    const startTime = quizDetail.startTime;
+    const duration = quizDetail.duration;
+    const startTimeObj = new Date(startTime);
+    const currentTimeObj = new Date();
+    const timeSpend = currentTimeObj.getTime() - startTimeObj.getTime();
+    let remainingMin = 0,
+      remainingSec = 0;
+    if (timeSpend < duration * 60 * 1000) {
+      const remainingTime = duration * 60 * 1000 - timeSpend;
+      remainingMin = remainingTime / 1000 / 60;
+      remainingSec = Math.floor((remainingMin % 1) * 60);
+      remainingMin = Math.floor(remainingMin);
+    }
+    return {
+      startTime: startTime,
+      remainingMinutes: remainingMin,
+      remainingSeconds: remainingSec,
+    };
+  }
 }

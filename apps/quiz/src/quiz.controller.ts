@@ -109,4 +109,13 @@ export class QuizController {
 
     return this.quizService.changeQuizStateToLive(quiz_id);
   }
+
+  @Get('get_remaining_time/:quiz_id')
+  @UseGuards(JwtAuthGuard)
+  async remainingTime(@Param('quiz_id', UppercasePipe) quiz_id: string) {
+    const valid = await this.quizService.isValidQuizId(quiz_id);
+    if (!valid)
+      throw new BadRequestException('Please provide a valid quiz id.');
+    return this.quizService.giveRemainingTime(quiz_id);
+  }
 }
