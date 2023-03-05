@@ -182,10 +182,14 @@ export class QuizService {
     const startTimeObj = new Date(startTime);
     const currentTimeObj = new Date();
     const timeSpend = currentTimeObj.getTime() - startTimeObj.getTime();
-    const remainingTime = duration * 60 * 1000 - timeSpend;
-    let remainingMin = remainingTime / 1000 / 60;
-    const remainingSec = Math.floor((remainingMin % 1) * 60);
-    remainingMin = Math.floor(remainingMin);
+    let remainingMin = 0,
+      remainingSec = 0;
+    if (timeSpend < duration * 60 * 1000) {
+      const remainingTime = duration * 60 * 1000 - timeSpend;
+      remainingMin = remainingTime / 1000 / 60;
+      remainingSec = Math.floor((remainingMin % 1) * 60);
+      remainingMin = Math.floor(remainingMin);
+    }
     return {
       startTime: startTime,
       remainingMinutes: remainingMin,
