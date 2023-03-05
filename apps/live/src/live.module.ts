@@ -6,7 +6,6 @@ import {
   QuizSchema,
   RmqModule,
 } from '@app/common';
-import { AUTH_SERVICE } from '@app/common/auth/services';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -21,14 +20,13 @@ import { LiveService } from './live.service';
       isGlobal: true,
       validationSchema: Joi.object({
         MONGODB_URI: Joi.string().required(),
-        PORT: Joi.number().required(),
+        RABBIT_MQ_URI: Joi.string().required(),
+        RABBIT_MQ_LIVE_QUEUE: Joi.string().required(),
       }),
       envFilePath: './apps/live/.env',
     }),
     DatabaseModule,
-    RmqModule.register({
-      name: AUTH_SERVICE,
-    }),
+    RmqModule,
     AuthModule,
   ],
   controllers: [LiveController],

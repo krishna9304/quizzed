@@ -7,10 +7,13 @@ import {
   quiz_status,
   Teacher,
 } from '@app/common';
+import { LIVE_SERVICE } from '@app/common/auth/services';
 import { APIResponse } from '@app/common/types';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { randomUUID } from 'crypto';
 import { isValidObjectId, Types } from 'mongoose';
+import { lastValueFrom } from 'rxjs';
 import { CreateQuestionRequest } from './dto/create-question.request';
 import { CreateQuizRequest } from './dto/create-quiz.request';
 
@@ -20,6 +23,7 @@ export class QuizService {
     private readonly quizRepository: QuizRepository,
     private readonly questionRepository: QuestionRepository,
     private readonly azureBlobUtil: AzureBlobUtil,
+    @Inject(LIVE_SERVICE) private liveClient: ClientProxy,
   ) {}
 
   getServerStat(): APIResponse {
@@ -184,5 +188,14 @@ export class QuizService {
         "This quiz's status is completed, you cannot re-publish it.",
       );
     }
+  }
+
+  async joinQuizByQuizId(quiz_id: string, student_regdNo: string) {
+    await lastValueFrom(
+      this.liveClient.emit('join_quiz', {
+        quiz_id,
+        student_regdNo,
+      }),
+    );
   }
 }

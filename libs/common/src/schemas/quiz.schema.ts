@@ -2,18 +2,12 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { AbstractDocument } from '@app/common';
 import { Types } from 'mongoose';
 
-interface AttemptedQuestions {
-  [question_id: string]: boolean;
-}
-export interface StudentsAppeared {
-  [regdNo: string]: AttemptedQuestions;
-}
-
 export const quiz_status = {
   DRAFT: 'draft',
   LIVE: 'live',
   COMPLETED: 'completed',
 };
+
 @Schema({ versionKey: false })
 export class Quiz extends AbstractDocument {
   @Prop({ required: true, unique: true })
@@ -55,8 +49,8 @@ export class Quiz extends AbstractDocument {
   @Prop({ default: null })
   startTime: string;
 
-  @Prop({ required: false, default: {}, type: Object })
-  total_students_appeared: StudentsAppeared;
+  @Prop({ required: false, default: [], ref: 'Quizstats' })
+  appeared_student_details: Types.ObjectId[];
 
   @Prop({ required: false, default: [], ref: 'Question' })
   questions: Types.ObjectId[];
@@ -64,10 +58,10 @@ export class Quiz extends AbstractDocument {
   @Prop({ default: quiz_status.DRAFT })
   status: string;
 
-  @Prop({ default: new Date().toDateString() })
+  @Prop({ default: new Date().toISOString() })
   created_at: string;
 
-  @Prop({ default: new Date().toDateString() })
+  @Prop({ default: new Date().toISOString() })
   updated_at: string;
 
   @Prop({ default: null, type: Object })

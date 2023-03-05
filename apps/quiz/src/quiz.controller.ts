@@ -109,4 +109,21 @@ export class QuizController {
 
     return this.quizService.changeQuizStateToLive(quiz_id);
   }
+
+  @Get('join/:quiz_id')
+  @UseGuards(JwtAuthGuard)
+  async joinQuiz(
+    @Req() req: Request,
+    @Param('quiz_id', UppercasePipe) quiz_id: string,
+  ) {
+    const valid = await this.quizService.isValidQuizId(quiz_id);
+    if (!valid)
+      throw new BadRequestException('Please provide a valid quiz id.');
+
+    const user: any = req.user;
+    if (user.type !== 'student')
+      throw new BadRequestException('Only students can join quizzes.');
+
+    return this.quizService.joinQuizByQuizId(quiz_id, user.regdNo);
+  }
 }

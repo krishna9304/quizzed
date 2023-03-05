@@ -24,10 +24,10 @@ export class Question extends AbstractDocument {
   @Prop({ required: true })
   created_by: string;
 
-  @Prop({ default: new Date().toDateString() })
+  @Prop({ default: new Date().toISOString() })
   created_at: string;
 
-  @Prop({ default: new Date().toDateString() })
+  @Prop({ default: new Date().toISOString() })
   updated_at: string;
 }
 

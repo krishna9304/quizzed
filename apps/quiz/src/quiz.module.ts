@@ -18,7 +18,7 @@ import {
   UtilModule,
 } from '@app/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AUTH_SERVICE } from '@app/common/auth/services';
+import { AUTH_SERVICE, LIVE_SERVICE } from '@app/common/auth/services';
 
 @Module({
   imports: [
@@ -37,6 +37,9 @@ import { AUTH_SERVICE } from '@app/common/auth/services';
       envFilePath: './apps/quiz/.env',
     }),
     DatabaseModule,
+    RmqModule.register({
+      name: LIVE_SERVICE,
+    }),
     RmqModule.register({
       name: AUTH_SERVICE,
     }),

@@ -1,5 +1,4 @@
 import { AuthModule, RmqModule } from '@app/common';
-import { MAIL_SERVICE } from '@app/common/auth/services';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';

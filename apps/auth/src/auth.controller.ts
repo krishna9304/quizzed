@@ -1,6 +1,6 @@
 import { Teacher, User, JwtAuthGuard as JWTVerifyGuard } from '@app/common';
 import { APIResponse } from '@app/common/types';
-import { Controller, Get, Param, Post, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { Response } from 'express';
 import { AuthService } from './auth.service';

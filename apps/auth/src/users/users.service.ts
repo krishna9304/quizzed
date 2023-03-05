@@ -191,8 +191,8 @@ export class UsersService {
       section: rawUser.detail[0].sectioncode,
       password: await bcrypt.hash(password, 10),
       status: 'active',
-      created_at: new Date().toDateString(),
-      updated_at: new Date().toDateString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
       metadata: null,
     };
     return user;

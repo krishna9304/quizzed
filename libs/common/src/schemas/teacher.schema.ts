@@ -27,10 +27,10 @@ export class Teacher extends AbstractDocument {
   @Prop({ default: 'inactive' })
   status: string;
 
-  @Prop({ default: new Date().toDateString() })
+  @Prop({ default: new Date().toISOString() })
   created_at: string;
 
-  @Prop({ default: new Date().toDateString() })
+  @Prop({ default: new Date().toISOString() })
   updated_at: string;
 
   @Prop({ default: null, type: Object })
