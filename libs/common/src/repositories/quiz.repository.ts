@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Model, Connection } from 'mongoose';
-import { AbstractRepository, Quiz, quiz_status } from '@app/common';
+import { AbstractRepository, Quiz, quiz_status, User } from '@app/common';
 
 @Injectable()
 export class QuizRepository extends AbstractRepository<Quiz> {
@@ -23,5 +23,21 @@ export class QuizRepository extends AbstractRepository<Quiz> {
 
   async findAllLiveQuizzes(): Promise<Quiz[]> {
     return this.model.find({ status: quiz_status.LIVE }).exec();
+  }
+
+  async getPaginatedQuizzesForTeacher(
+    user: User,
+    status: string,
+    page = 1,
+    limit = 10,
+  ): Promise<Quiz[]> {
+    return this.model
+      .find({
+        conducted_by: user.regdNo,
+        status,
+      })
+      .sort({ updated_at: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
   }
 }

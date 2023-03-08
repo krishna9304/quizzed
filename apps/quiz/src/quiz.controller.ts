@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -27,6 +28,22 @@ export class QuizController {
   @Get()
   serverStats(): APIResponse {
     return this.quizService.getServerStat();
+  }
+
+  @Get('getall')
+  @UseGuards(JwtAuthGuard)
+  async getAllQuizzes(@Req() req: Request, @Query() query: any) {
+    const status: string = query?.status.toLowerCase();
+    const page: number = parseInt(query?.page);
+    const limit: number = parseInt(query?.limit);
+    const user: any = req.user;
+    if (user.type === 'teacher')
+      return this.quizService.getAllQuizzesForTeacher(
+        user,
+        status,
+        page,
+        limit,
+      );
   }
 
   @Get(':quiz_id')
@@ -107,7 +124,7 @@ export class QuizController {
     if (user.type !== 'teacher')
       throw new BadRequestException('Only teachers can publish quizzes');
 
-    return this.quizService.changeQuizStateToLive(quiz_id);
+    return this.quizService.changeQuizStateToLive(quiz_id, user);
   }
 
   @Get('join/:quiz_id')

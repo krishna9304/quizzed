@@ -7,6 +7,7 @@ import {
   QuizStatsRepository,
   quiz_status,
   Teacher,
+  User,
 } from '@app/common';
 import { LIVE_SERVICE } from '@app/common/auth/services';
 import { APIResponse } from '@app/common/types';
@@ -187,8 +188,13 @@ export class QuizService {
     return this.questionRepository.findOne({ question_id });
   }
 
-  async changeQuizStateToLive(quiz_id: string): Promise<APIResponse> {
+  async changeQuizStateToLive(
+    quiz_id: string,
+    user: User,
+  ): Promise<APIResponse> {
     const quiz = await this.quizRepository.findOne({ quiz_id });
+    if (quiz.conducted_by !== user.regdNo)
+      throw new BadRequestException('Illegal action.');
     if (quiz.questions.length !== quiz.total_questions) {
       const questionsLeft = quiz.total_questions - quiz.questions.length;
       throw new BadRequestException(
@@ -286,5 +292,19 @@ export class QuizService {
       quiz_id: updatedQuiz.quiz_id,
     });
     await this.quizStatsRepository.bulkUpdateQuizStats(quizStats);
+  }
+
+  async getAllQuizzesForTeacher(
+    user: User,
+    status: string,
+    page = 1,
+    limit = 10,
+  ) {
+    return this.quizRepository.getPaginatedQuizzesForTeacher(
+      user,
+      status,
+      page,
+      limit,
+    );
   }
 }
