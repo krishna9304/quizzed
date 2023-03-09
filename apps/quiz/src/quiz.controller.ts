@@ -160,7 +160,7 @@ export class QuizController {
     return this.quizService.joinQuizByQuizId(quiz_id, user.regdNo);
   }
 
-  @Get('get_remaining_time/:quiz_id')
+  @Get('get-remaining-time/:quiz_id')
   @UseGuards(JwtAuthGuard)
   async remainingTime(@Param('quiz_id', UppercasePipe) quiz_id: string) {
     const valid = await this.quizService.isValidQuizId(quiz_id);
