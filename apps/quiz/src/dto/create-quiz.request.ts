@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 import { Types } from 'mongoose';
 
 export class CreateQuizRequest {
@@ -26,6 +26,8 @@ export class CreateQuizRequest {
 
   @IsNotEmpty()
   @IsNumber()
+  @Max(8)
+  @Min(1)
   semester: number;
 
   @IsNotEmpty()

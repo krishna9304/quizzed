@@ -229,7 +229,7 @@ export class QuizService {
     quiz_id: string,
     student_regdNo: string,
   ): Promise<APIResponse> {
-    const quiz = await this.quizRepository.findOne({ quiz_id });
+    const quiz: Quiz = await this.quizRepository.findOne({ quiz_id });
     if (quiz.status === quiz_status.COMPLETED)
       throw new BadRequestException('Quiz is expired!');
 
@@ -253,7 +253,7 @@ export class QuizService {
       return {
         statusCode: 200,
         message: 'Your quiz has been started.',
-        data: null,
+        data: quiz,
         errors: [],
       };
     } catch (error) {
@@ -356,5 +356,18 @@ export class QuizService {
       errors: [],
       message: 'Draft deleted succesfully.',
     };
+  }
+
+  async getAllQuestionForAQuiz(user: any, quiz_id: string) {
+    const quiz = await this.quizRepository.findOne({ quiz_id });
+    if (user.type === 'student' && quiz.status !== quiz_status.LIVE)
+      throw new BadRequestException(
+        'Students can only check the questions of a live quiz.',
+      );
+    const questionObjectIds = quiz.questions;
+    return this.questionRepository.findAllQuestionsByObjectIds(
+      user,
+      questionObjectIds,
+    );
   }
 }

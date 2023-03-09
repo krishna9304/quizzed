@@ -52,6 +52,9 @@ export class QuizController {
   @Get(':quiz_id')
   @UseGuards(JwtAuthGuard)
   async getQuizDetails(@Param('quiz_id', UppercasePipe) quiz_id: string) {
+    const valid = await this.quizService.isValidQuizId(quiz_id);
+    if (!valid)
+      throw new BadRequestException('Please provide a valid quiz id.');
     return this.quizService.getQuizByQuizId(quiz_id);
   }
 
@@ -61,6 +64,16 @@ export class QuizController {
     @Param('question_id', UppercasePipe) question_id: string,
   ) {
     return this.quizService.getQuestionByQuestionId(question_id);
+  }
+
+  @Get(':quiz_id/get-all-questions')
+  @UseGuards(JwtAuthGuard)
+  async getQuestions(@Req() req: Request, @Param('quiz_id') quiz_id: string) {
+    const valid = await this.quizService.isValidQuizId(quiz_id);
+    if (!valid)
+      throw new BadRequestException('Please provide a valid quiz id.');
+    const user: any = req.user;
+    return this.quizService.getAllQuestionForAQuiz(user, quiz_id);
   }
 
   @Post('create')
