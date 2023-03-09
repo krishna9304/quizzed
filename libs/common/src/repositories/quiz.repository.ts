@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Model, Connection } from 'mongoose';
-import { AbstractRepository, Quiz, quiz_status, User } from '@app/common';
+import { AbstractRepository, Quiz, quiz_status, Teacher } from '@app/common';
 
 @Injectable()
 export class QuizRepository extends AbstractRepository<Quiz> {
@@ -26,7 +26,7 @@ export class QuizRepository extends AbstractRepository<Quiz> {
   }
 
   async getPaginatedQuizzesForTeacher(
-    user: User,
+    user: Teacher,
     status: string,
     page = 1,
     limit = 10,
@@ -39,5 +39,9 @@ export class QuizRepository extends AbstractRepository<Quiz> {
       .sort({ updated_at: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
+  }
+
+  async findByQuizIdAndDelete(quiz_id) {
+    return this.model.findOneAndDelete({ quiz_id });
   }
 }

@@ -45,7 +45,7 @@ export class QuizService {
             new Date(quiz.startTime).getTime() + quiz.duration * 60 * 1000;
 
           if (now >= quizEndTime) {
-            await this.updateQuizStatus(quiz._id.toString());
+            await this.updateQuizStatus(quiz.quiz_id);
           }
         });
       } catch (error) {
@@ -283,9 +283,9 @@ export class QuizService {
     };
   }
 
-  async updateQuizStatus(quizId: string) {
+  async updateQuizStatus(quiz_id: string) {
     const updatedQuiz = await this.quizRepository.findOneAndUpdate(
-      { _id: new Types.ObjectId(quizId) },
+      { quiz_id },
       { status: quiz_status.COMPLETED },
     );
     const quizStats = await this.quizStatsRepository.find({
@@ -295,7 +295,7 @@ export class QuizService {
   }
 
   async getAllQuizzesForTeacher(
-    user: User,
+    user: Teacher,
     status: string,
     page = 1,
     limit = 10,
@@ -306,5 +306,55 @@ export class QuizService {
       page,
       limit,
     );
+  }
+
+  async getAllPastQuizzesForStudent(user: User, page = 1, limit = 10) {
+    return this.quizStatsRepository.getPaginatedPastQuizzesForStudent(
+      user,
+      page,
+      limit,
+    );
+  }
+
+  async changeQuizStateToCompleted(
+    user: Teacher,
+    quiz_id: string,
+  ): Promise<APIResponse> {
+    const quiz = await this.quizRepository.findOne({ quiz_id });
+    if (quiz.conducted_by !== user.regdNo)
+      throw new BadRequestException('Illegal action.');
+
+    if (quiz.status === quiz_status.COMPLETED)
+      throw new BadRequestException('Quiz is expired!');
+
+    if (quiz.status !== quiz_status.LIVE)
+      throw new BadRequestException('Quiz is not live yet!');
+
+    await this.updateQuizStatus(quiz_id);
+
+    return {
+      statusCode: 200,
+      data: null,
+      errors: [],
+      message: 'Quiz ended by the teacher.',
+    };
+  }
+
+  async deleteDraftQuiz(user: Teacher, quiz_id: string): Promise<APIResponse> {
+    const quiz = await this.quizRepository.findOne({ quiz_id });
+    if (quiz.conducted_by !== user.regdNo)
+      throw new BadRequestException('Illegal action.');
+
+    if (quiz.status !== quiz_status.DRAFT)
+      throw new BadRequestException('Quiz is not in draft mode!');
+
+    await this.quizRepository.findByQuizIdAndDelete(quiz_id);
+
+    return {
+      statusCode: 200,
+      data: null,
+      errors: [],
+      message: 'Draft deleted succesfully.',
+    };
   }
 }

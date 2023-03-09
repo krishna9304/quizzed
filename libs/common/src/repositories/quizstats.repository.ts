@@ -3,6 +3,7 @@ import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Model, Connection, Types, MongooseError } from 'mongoose';
 import { AbstractRepository } from '../database/abstract.repository';
 import { Quizstats } from '../schemas/quizstats.schema';
+import { User } from '../schemas/user.schema';
 
 @Injectable()
 export class QuizStatsRepository extends AbstractRepository<Quizstats> {
@@ -39,5 +40,16 @@ export class QuizStatsRepository extends AbstractRepository<Quizstats> {
       this.logger.error(`Error updating quiz stats: ${error.message}`);
       throw new MongooseError(error.message);
     }
+  }
+
+  async getPaginatedPastQuizzesForStudent(user: User, page = 1, limit = 10) {
+    return this.model
+      .find({
+        completed: true,
+        student_regdNo: user.regdNo,
+      })
+      .sort({ updated_at: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
   }
 }

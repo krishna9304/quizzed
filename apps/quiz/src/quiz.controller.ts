@@ -4,6 +4,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -33,7 +34,7 @@ export class QuizController {
   @Get('getall')
   @UseGuards(JwtAuthGuard)
   async getAllQuizzes(@Req() req: Request, @Query() query: any) {
-    const status: string = query?.status.toLowerCase();
+    const status: string = query?.status?.toLowerCase() || '';
     const page: number = parseInt(query?.page);
     const limit: number = parseInt(query?.limit);
     const user: any = req.user;
@@ -44,6 +45,8 @@ export class QuizController {
         page,
         limit,
       );
+    if (user.type === 'student')
+      return this.quizService.getAllPastQuizzesForStudent(user, page, limit);
   }
 
   @Get(':quiz_id')
@@ -151,5 +154,39 @@ export class QuizController {
     if (!valid)
       throw new BadRequestException('Please provide a valid quiz id.');
     return this.quizService.giveRemainingTime(quiz_id);
+  }
+
+  @Put('end-quiz/:quiz_id')
+  @UseGuards(JwtAuthGuard)
+  async endQuiz(
+    @Req() req: Request,
+    @Param('quiz_id', UppercasePipe) quiz_id: string,
+  ) {
+    const valid = await this.quizService.isValidQuizId(quiz_id);
+    if (!valid)
+      throw new BadRequestException('Please provide a valid quiz id.');
+
+    const user: any = req.user;
+    if (user.type !== 'teacher')
+      throw new BadRequestException('Only teachers can end quizzes');
+
+    return this.quizService.changeQuizStateToCompleted(user, quiz_id);
+  }
+
+  @Delete(':quiz_id')
+  @UseGuards(JwtAuthGuard)
+  async deleteDraft(
+    @Req() req: Request,
+    @Param('quiz_id', UppercasePipe) quiz_id: string,
+  ) {
+    const valid = await this.quizService.isValidQuizId(quiz_id);
+    if (!valid)
+      throw new BadRequestException('Please provide a valid quiz id.');
+
+    const user: any = req.user;
+    if (user.type !== 'teacher')
+      throw new BadRequestException('Only teachers can delete draft quizzes');
+
+    return this.quizService.deleteDraftQuiz(user, quiz_id);
   }
 }
