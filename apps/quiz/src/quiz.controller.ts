@@ -51,11 +51,15 @@ export class QuizController {
 
   @Get(':quiz_id')
   @UseGuards(JwtAuthGuard)
-  async getQuizDetails(@Param('quiz_id', UppercasePipe) quiz_id: string) {
+  async getQuizDetails(
+    @Req() req: Request,
+    @Param('quiz_id', UppercasePipe) quiz_id: string,
+  ) {
     const valid = await this.quizService.isValidQuizId(quiz_id);
     if (!valid)
       throw new BadRequestException('Please provide a valid quiz id.');
-    return this.quizService.getQuizByQuizId(quiz_id);
+
+    return this.quizService.getQuizByQuizId(req.user, quiz_id);
   }
 
   @Get('questions/:question_id')
@@ -73,7 +77,7 @@ export class QuizController {
     if (!valid)
       throw new BadRequestException('Please provide a valid quiz id.');
     const user: any = req.user;
-    return this.quizService.getAllQuestionForAQuiz(user, quiz_id);
+    return this.quizService.getAllQuestionsForAQuiz(user, quiz_id);
   }
 
   @Post('create')
@@ -157,7 +161,7 @@ export class QuizController {
     if (user.type !== 'student')
       throw new BadRequestException('Only students can join quizzes.');
 
-    return this.quizService.joinQuizByQuizId(quiz_id, user.regdNo);
+    return this.quizService.joinQuizByQuizId(quiz_id, user);
   }
 
   @Get('get-remaining-time/:quiz_id')

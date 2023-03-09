@@ -180,8 +180,23 @@ export class QuizService {
     }
   }
 
-  async getQuizByQuizId(quiz_id: string): Promise<Quiz> {
-    return this.quizRepository.findOne({ quiz_id });
+  async getQuizByQuizId(user: any, quiz_id: string): Promise<Quiz> {
+    const quiz = await this.quizRepository.findOne({ quiz_id });
+    if (user.type === 'teacher' && quiz.conducted_by !== user.regdNo)
+      throw new BadRequestException('Illegal Action.');
+
+    if (user.type === 'student') {
+      if (user.section.toLowerCase() !== quiz.section.toLowerCase())
+        throw new BadRequestException(
+          'User do not have access to view this quiz.',
+        );
+      if (quiz.status === quiz_status.DRAFT)
+        throw new BadRequestException(
+          'Students do not have permission to view draft quizzes.',
+        );
+    }
+
+    return quiz;
   }
 
   async getQuestionByQuestionId(question_id: string): Promise<Question> {
@@ -225,10 +240,7 @@ export class QuizService {
     }
   }
 
-  async joinQuizByQuizId(
-    quiz_id: string,
-    student_regdNo: string,
-  ): Promise<APIResponse> {
+  async joinQuizByQuizId(quiz_id: string, user: User): Promise<APIResponse> {
     const quiz: Quiz = await this.quizRepository.findOne({ quiz_id });
     if (quiz.status === quiz_status.COMPLETED)
       throw new BadRequestException('Quiz is expired!');
@@ -236,24 +248,36 @@ export class QuizService {
     if (quiz.status !== quiz_status.LIVE)
       throw new BadRequestException('Quiz is not live yet!');
 
-    const alreadyJoined = await this.quizStatsRepository.exists({
-      $and: [{ student_regdNo: student_regdNo }, { quiz_id: quiz_id }],
-    });
-    if (alreadyJoined)
+    if (user.section.toLowerCase() !== quiz.section.toLowerCase())
       throw new BadRequestException(
-        `You have already joined the quiz ${quiz_id}`,
+        'User do not have access to join this quiz.',
       );
+
+    const quizStats = await this.quizStatsRepository.findOne({
+      $and: [{ student_regdNo: user.regdNo }, { quiz_id: quiz_id }],
+    });
+    const questions = await this.getAllQuestionsForAQuiz(user, quiz_id);
+
+    if (quizStats) {
+      return {
+        statusCode: 200,
+        message:
+          'You have already joined the quiz. Please resume where you left from.',
+        errors: [],
+        data: { questions, quizStats },
+      };
+    }
     try {
       await lastValueFrom(
         this.liveClient.emit('join_quiz', {
           quiz_id,
-          student_regdNo,
+          student_regdNo: user.regdNo,
         }),
       );
       return {
         statusCode: 200,
         message: 'Your quiz has been started.',
-        data: quiz,
+        data: questions,
         errors: [],
       };
     } catch (error) {
@@ -358,7 +382,7 @@ export class QuizService {
     };
   }
 
-  async getAllQuestionForAQuiz(user: any, quiz_id: string) {
+  async getAllQuestionsForAQuiz(user: any, quiz_id: string) {
     const quiz = await this.quizRepository.findOne({ quiz_id });
     if (user.type === 'student' && quiz.status !== quiz_status.LIVE)
       throw new BadRequestException(

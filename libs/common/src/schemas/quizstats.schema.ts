@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { AbstractDocument } from '@app/common';
 
 export interface QuestionsAttemptedDetails {
-  [question_id: string]: boolean;
+  [question_id: string]: number;
 }
 
 @Schema({ versionKey: false })
