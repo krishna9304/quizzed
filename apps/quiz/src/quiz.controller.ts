@@ -1,4 +1,4 @@
-import { JwtAuthGuard, UppercasePipe } from '@app/common';
+import { JwtAuthGuard, LowercasePipe, UppercasePipe } from '@app/common';
 import { APIResponse } from '@app/common/types';
 import {
   BadRequestException,
@@ -47,6 +47,16 @@ export class QuizController {
       );
     if (user.type === 'student')
       return this.quizService.getAllPastQuizzesForStudent(user, page, limit);
+  }
+
+  @Get('subject')
+  @UseGuards(JwtAuthGuard)
+  getSubjects(
+    @Query('course', LowercasePipe) reqCourse: string,
+    @Query('branch', LowercasePipe) reqBranch: string,
+    @Query('sem') reqSem: number,
+  ) {
+    return this.quizService.getSubjects(reqCourse, reqBranch, reqSem);
   }
 
   @Get(':quiz_id')
