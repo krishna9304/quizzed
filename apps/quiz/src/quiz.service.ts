@@ -26,6 +26,9 @@ import { CreateQuestionRequest } from './dto/create-question.request';
 import { CreateQuizRequest } from './dto/create-quiz.request';
 import * as cron from 'node-cron';
 
+import { readFileSync } from 'fs';
+import * as path from 'path';
+
 @Injectable()
 export class QuizService {
   constructor(
@@ -393,5 +396,21 @@ export class QuizService {
       user,
       questionObjectIds,
     );
+  }
+  async getSubjects(course: string, branch: string, sem: number) {
+    const SUBJECTS_PATH = path.join(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      'apps',
+      'quiz',
+      'src',
+      'constants',
+      'course.json',
+    );
+    const configData = readFileSync(SUBJECTS_PATH, 'utf8');
+    const data = JSON.parse(configData);
+    return data[course][branch]['sem' + sem];
   }
 }
