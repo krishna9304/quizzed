@@ -57,6 +57,7 @@ export class UsersService {
       this.mailClient.emit('teacher_registered', {
         name: request.name,
         email: request.email,
+        regdNo: teacher.regdNo,
         otp,
       }),
     );

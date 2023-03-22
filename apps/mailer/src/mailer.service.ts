@@ -33,7 +33,7 @@ export class MailerService {
         from: 'Admin | Quizzed',
         to: data.email,
         subject: 'Verify your email | Quizzed',
-        html: getOtpTemplate(data.name, data.otp),
+        html: getOtpTemplate(data.name, data.otp, data.regdNo),
       });
       this.logger.log(`OTP sent to ${data.email}`);
     } catch (error) {

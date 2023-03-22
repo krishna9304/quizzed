@@ -17,9 +17,9 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
-import { Types } from 'mongoose';
 import { CreateQuestionRequest } from './dto/create-question.request';
 import { CreateQuizRequest } from './dto/create-quiz.request';
+import { UpdateProgressRequest } from './dto/submit-answer.request';
 import { QuizService } from './quiz.service';
 
 @Controller('quiz')
@@ -119,13 +119,13 @@ export class QuizController {
   async addQuestionToQuiz(
     @Param('quiz_id', UppercasePipe) quiz_id: string,
     @Req() req: Request,
-    @Body() { question_db_id }: { question_db_id: string },
+    @Body() { question_id }: { question_id: string },
   ) {
     let valid = await this.quizService.isValidQuizId(quiz_id);
     if (!valid)
       throw new BadRequestException('Please provide a valid quiz id.');
 
-    valid = await this.quizService.isValidQuestionId(question_db_id);
+    valid = await this.quizService.isValidQuestionId(question_id);
     if (!valid)
       throw new BadRequestException('Please provide a valid question id.');
 
@@ -134,10 +134,7 @@ export class QuizController {
       throw new BadRequestException(
         'Only teachers can add questions to quizzes',
       );
-    return this.quizService.mapQuestionToQuiz(
-      quiz_id,
-      new Types.ObjectId(question_db_id),
-    );
+    return this.quizService.mapQuestionToQuiz(quiz_id, question_id);
   }
 
   @Put('publish')
@@ -215,5 +212,23 @@ export class QuizController {
       throw new BadRequestException('Only teachers can delete draft quizzes');
 
     return this.quizService.deleteDraftQuiz(user, quiz_id);
+  }
+
+  @Put(':quiz_id/update-progress')
+  @UseGuards(JwtAuthGuard)
+  async updateProgress(
+    @Param('quiz_id', UppercasePipe) quiz_id: string,
+    @Req() req: Request,
+    @Body() request: UpdateProgressRequest,
+  ) {
+    const valid = await this.quizService.isValidQuizId(quiz_id);
+    if (!valid)
+      throw new BadRequestException('Please provide a valid quiz id.');
+
+    const user: any = req.user;
+    if (user.type !== 'student')
+      throw new BadRequestException('Only students can submit answers');
+
+    return this.quizService.queueUpdateProgress(user, request, quiz_id);
   }
 }

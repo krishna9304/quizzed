@@ -48,7 +48,7 @@ export class CreateQuizRequest {
 
   appeared_student_details: Types.ObjectId[];
 
-  questions: Types.ObjectId[];
+  questions: string[];
 
   status: string;
 

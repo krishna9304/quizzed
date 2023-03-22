@@ -8,5 +8,8 @@ export class MailRequest {
   @IsNotEmpty()
   email: string;
 
+  @IsNotEmpty()
+  regdNo: string;
+
   otp?: number;
 }

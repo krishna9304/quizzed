@@ -1,6 +1,7 @@
 import { QuizRepository, QuizStatsRepository } from '@app/common';
 import { Injectable, Logger } from '@nestjs/common';
 import { JoinQuizRequest } from './dto/join-quiz.request';
+import { ProgressUpdateQueueRequest } from './dto/submit-answer-update.request';
 
 @Injectable()
 export class LiveService {
@@ -21,5 +22,18 @@ export class LiveService {
       },
     );
     this.logger.log(`${data.student_regdNo} joined quiz ${data.quiz_id}`);
+  }
+
+  async updateQuizStats(data: ProgressUpdateQueueRequest) {
+    await this.quizStatsRepository.findOneAndUpdate(
+      { student_regdNo: data.student_regdNo, quiz_id: data.quiz_id },
+      {
+        questions_attempted_details: data.questions_attempted_details,
+        updated_at: new Date().toISOString(),
+      },
+    );
+    this.logger.log(
+      `Quizstats progress updated for student - ${data.student_regdNo}`,
+    );
   }
 }

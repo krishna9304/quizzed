@@ -3,7 +3,7 @@ import {
   BlockBlobClient,
   ContainerClient,
 } from '@azure/storage-blob';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as sharp from 'sharp';
 

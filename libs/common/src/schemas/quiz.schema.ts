@@ -53,7 +53,7 @@ export class Quiz extends AbstractDocument {
   appeared_student_details: Types.ObjectId[];
 
   @Prop({ required: false, default: [], ref: 'Question' })
-  questions: Types.ObjectId[];
+  questions: string[];
 
   @Prop({ default: quiz_status.DRAFT })
   status: string;

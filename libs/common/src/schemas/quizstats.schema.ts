@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { AbstractDocument } from '@app/common';
 
-export interface QuestionsAttemptedDetails {
+export type QuestionsAttemptedDetails = {
   [question_id: string]: number;
-}
+};
 
 @Schema({ versionKey: false })
 export class Quizstats extends AbstractDocument {
@@ -22,8 +22,8 @@ export class Quizstats extends AbstractDocument {
   @Prop({ default: null })
   finish_time?: string;
 
-  @Prop({ default: [] })
-  questions_attempted_details?: QuestionsAttemptedDetails[];
+  @Prop({ default: {}, type: Object })
+  questions_attempted_details?: QuestionsAttemptedDetails;
 
   @Prop({ default: new Date().toISOString() })
   created_at?: string;

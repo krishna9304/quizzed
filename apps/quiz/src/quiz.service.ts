@@ -20,7 +20,6 @@ import {
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { randomUUID } from 'crypto';
-import { isValidObjectId, Types } from 'mongoose';
 import { lastValueFrom } from 'rxjs';
 import { CreateQuestionRequest } from './dto/create-question.request';
 import { CreateQuizRequest } from './dto/create-quiz.request';
@@ -28,6 +27,8 @@ import * as cron from 'node-cron';
 
 import { readFileSync } from 'fs';
 import * as path from 'path';
+import { UpdateProgressRequest } from './dto/submit-answer.request';
+import { isSubset } from './utils';
 
 @Injectable()
 export class QuizService {
@@ -112,11 +113,9 @@ export class QuizService {
     return true;
   }
 
-  async isValidQuestionId(question_db_id: string) {
-    if (!isValidObjectId(question_db_id)) return false;
-
+  async isValidQuestionId(question_id: string) {
     const questionFound = await this.questionRepository.exists({
-      _id: new Types.ObjectId(question_db_id),
+      question_id,
     });
     if (!questionFound) return false;
 
@@ -153,10 +152,10 @@ export class QuizService {
 
   async mapQuestionToQuiz(
     quiz_id: string,
-    question_db_id: Types.ObjectId,
+    question_id: string,
   ): Promise<APIResponse> {
     const quiz = await this.quizRepository.findOne({ quiz_id });
-    if (quiz.questions.includes(question_db_id)) {
+    if (quiz.questions.includes(question_id)) {
       throw new BadRequestException(
         'This question is already mapped to the quiz.',
       );
@@ -168,7 +167,7 @@ export class QuizService {
       const updatedQuiz = await this.quizRepository.findOneAndUpdate(
         { quiz_id },
         {
-          $addToSet: { questions: question_db_id },
+          $addToSet: { questions: question_id },
           updated_at: new Date().toISOString(),
         },
       );
@@ -256,12 +255,16 @@ export class QuizService {
         'User do not have access to join this quiz.',
       );
 
-    const quizStats = await this.quizStatsRepository.findOne({
+    const quizStats = await this.quizStatsRepository.exists({
       $and: [{ student_regdNo: user.regdNo }, { quiz_id: quiz_id }],
     });
+
     const questions = await this.getAllQuestionsForAQuiz(user, quiz_id);
 
     if (quizStats) {
+      const quizStats = await this.quizStatsRepository.findOne({
+        $and: [{ student_regdNo: user.regdNo }, { quiz_id: quiz_id }],
+      });
       return {
         statusCode: 200,
         message:
@@ -391,12 +394,10 @@ export class QuizService {
       throw new BadRequestException(
         'Students can only check the questions of a live quiz.',
       );
-    const questionObjectIds = quiz.questions;
-    return this.questionRepository.findAllQuestionsByObjectIds(
-      user,
-      questionObjectIds,
-    );
+    const questionIds = quiz.questions;
+    return this.questionRepository.findAllQuestionsByQsnIds(user, questionIds);
   }
+
   async getSubjects(course: string, branch: string, sem: number) {
     const SUBJECTS_PATH = path.join(
       __dirname,
@@ -412,5 +413,63 @@ export class QuizService {
     const configData = readFileSync(SUBJECTS_PATH, 'utf8');
     const data = JSON.parse(configData);
     return data[course][branch]['sem' + sem];
+  }
+
+  async queueUpdateProgress(
+    user: any,
+    request: UpdateProgressRequest,
+    quiz_id: string,
+  ): Promise<APIResponse> {
+    const quiz: Quiz = await this.quizRepository.findOne({ quiz_id });
+    if (quiz.status === quiz_status.COMPLETED)
+      throw new BadRequestException('Quiz is expired!');
+
+    if (quiz.status !== quiz_status.LIVE)
+      throw new BadRequestException('Quiz is not live yet!');
+
+    if (user.section.toLowerCase() !== quiz.section.toLowerCase())
+      throw new BadRequestException(
+        'You do not have access to submit answers for this quiz.',
+      );
+
+    const quizStats = await this.quizStatsRepository.exists({
+      $and: [{ student_regdNo: user.regdNo }, { quiz_id: quiz_id }],
+    });
+
+    if (!quizStats) {
+      return {
+        statusCode: 200,
+        message: `You haven't joined the quiz yet. Submitting questions without joining the quiz is an illegal action.`,
+        errors: [],
+        data: null,
+      };
+    }
+
+    const question_ids: string[] = Object.keys(
+      request.questions_attempted_details,
+    );
+
+    if (!isSubset(question_ids, quiz.questions))
+      throw new BadRequestException('Illegal action.');
+
+    const option_vals = Object.values(request.questions_attempted_details);
+
+    if (!option_vals.every((val) => val >= 0 && val <= 3))
+      throw new BadRequestException('Option values must be one of 0, 1, 2, 3.');
+
+    await lastValueFrom(
+      this.liveClient.emit('update_progress', {
+        quiz_id,
+        student_regdNo: user.regdNo,
+        questions_attempted_details: request.questions_attempted_details,
+      }),
+    );
+
+    return {
+      statusCode: 200,
+      message: 'Progress updated successfully.',
+      errors: [],
+      data: null,
+    };
   }
 }
