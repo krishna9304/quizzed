@@ -214,7 +214,7 @@ export class QuizController {
     return this.quizService.deleteDraftQuiz(user, quiz_id);
   }
 
-  @Put(':quiz_id/update-progress')
+  @Put('update-progress/:quiz_id')
   @UseGuards(JwtAuthGuard)
   async updateProgress(
     @Param('quiz_id', UppercasePipe) quiz_id: string,
@@ -230,5 +230,18 @@ export class QuizController {
       throw new BadRequestException('Only students can submit answers');
 
     return this.quizService.queueUpdateProgress(user, request, quiz_id);
+  }
+
+  @Get('get-marks/:quiz_id')
+  @UseGuards(JwtAuthGuard)
+  async getQuizMarks(
+    @Param('quiz_id', UppercasePipe) quiz_id: string,
+    @Query('student_regdNo') student_regdNo: string,
+  ) {
+    const valid = await this.quizService.isValidQuizId(quiz_id);
+    if (!valid)
+      throw new BadRequestException('Please provide a valid quiz id.');
+
+    return this.quizService.calcMarksObtained(quiz_id, student_regdNo);
   }
 }

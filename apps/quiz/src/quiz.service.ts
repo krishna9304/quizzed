@@ -472,4 +472,48 @@ export class QuizService {
       data: null,
     };
   }
+
+  async calcMarksObtained(
+    quiz_id: string,
+    student_regdNo: string,
+  ): Promise<APIResponse> {
+    const quizStats = await this.quizStatsRepository.findOne({
+      quiz_id,
+      student_regdNo,
+    });
+
+    if (!quizStats) {
+      throw new BadRequestException(
+        'You have not attempted this quiz yet. Illegal action.',
+      );
+    }
+
+    if (!quizStats.completed)
+      throw new BadRequestException('Quiz is not completed yet.');
+
+    const question_ids = Object.keys(quizStats.questions_attempted_details);
+    const questionObjs = await this.questionRepository.findAllQuestionsByQsnIds(
+      { type: 'teacher' },
+      question_ids,
+    );
+
+    let marksObtained = 0;
+    questionObjs.forEach((question) => {
+      const optionSelected =
+        quizStats.questions_attempted_details[question.question_id];
+      if (optionSelected === question.correct_option) marksObtained += 1;
+    });
+
+    const quiz = await this.quizRepository.findOne({ quiz_id });
+
+    return {
+      statusCode: 200,
+      message: `Check marks obtained for quiz ${quiz_id}`,
+      errors: [],
+      data: {
+        marksObtained: marksObtained * quiz.per_question_marks,
+        totalMarks: quiz.total_marks,
+      },
+    };
+  }
 }
