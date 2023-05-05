@@ -16,7 +16,6 @@ export * from './repositories/quiz.repository';
 export * from './repositories/question.repository';
 export * from './repositories/quizstats.repository';
 export * from './middlewares/azure-blob.upload';
-export * from './middlewares/s3.upload';
 export * from './middlewares/middleware.module';
 export * from './pipes/uppercase.pipe';
 export * from './pipes/lowercase.pipe';

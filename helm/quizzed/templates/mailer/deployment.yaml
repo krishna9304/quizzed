@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mailer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mailer
+  template:
+    metadata:
+      labels:
+        app: mailer
+    spec:
+      containers:
+        - name: mailer
+          image: krishna9304/quizzed_mailer
+          env:
+            - name: RABBIT_MQ_AUTH_QUEUE
+              value: "auth"
+            - name: RABBIT_MQ_MAIL_QUEUE
+              value: "mail"
+            - name: RABBIT_MQ_QUIZ_QUEUE
+              value: "quiz"
+            - name: RABBIT_MQ_LIVE_QUEUE
+              value: "live"
+            - name: MAILER_EMAIL
+              value: "krishhtrishh9304@gmail.com"
+            - name: MAILER_PASS
+              value: "dcxjybafhocdrclp"

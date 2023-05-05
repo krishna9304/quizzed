@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quiz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quiz
+  template:
+    metadata:
+      labels:
+        app: quiz
+    spec:
+      containers:
+        - name: quiz
+          image: krishna9304/quizzed_quiz
+          ports:
+            - containerPort: 8000
+          env:
+            - name: PORT
+              value: "8000"
+            - name: RABBIT_MQ_AUTH_QUEUE
+              value: "auth"
+            - name: RABBIT_MQ_MAIL_QUEUE
+              value: "mail"
+            - name: RABBIT_MQ_QUIZ_QUEUE
+              value: "quiz"
+            - name: RABBIT_MQ_LIVE_QUEUE
+              value: "live"
+            - name: AZURE_BLOB_CONNECTION_STRING
+              value: "DefaultEndpointsProtocol=https;AccountName=quizzed;AccountKey=OGmVhcrXt2waKJrKoq9xsdHrwW7p/GksyQUkrNPkg+GRyR1gIswKnvHYrrgEsCqDMQuRpUtyMtyr+ASt6aSIBg==;EndpointSuffix=core.windows.net"
+            - name: AZURE_BLOB_CONTAINER_NAME
+              value: "quizzed-container"
