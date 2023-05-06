@@ -15,6 +15,7 @@ import { MailerService } from './mailer.service';
         MAILER_EMAIL: Joi.string().required(),
         MAILER_PASS: Joi.string().required(),
       }),
+      envFilePath: './apps/mailer/.env',
     }),
     RmqModule,
     AuthModule,
