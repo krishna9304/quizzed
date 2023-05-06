@@ -17,10 +17,14 @@ spec:
           image: krishna9304/quizzed_live
           env:
             - name: RABBIT_MQ_AUTH_QUEUE
-              value: "auth"
+              value: 'auth'
             - name: RABBIT_MQ_MAIL_QUEUE
-              value: "mail"
+              value: 'mail'
             - name: RABBIT_MQ_QUIZ_QUEUE
-              value: "quiz"
+              value: 'quiz'
             - name: RABBIT_MQ_LIVE_QUEUE
-              value: "live"
+              value: 'live'
+            - name: MONGODB_URI
+              value: mongodb://root:password123@quizzed-mongodb-headless:27017/
+            - name: RABBIT_MQ_URI
+              value: amqp://user1:password123@quizzed-rabbitmq:5672
