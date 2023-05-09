@@ -1,4 +1,4 @@
-FROM node:alpine As development
+FROM --platform=linux/amd64 node:lts-alpine As development
 
 RUN apk add --no-cache python3 \
     && python3 -m ensurepip \
@@ -14,7 +14,7 @@ COPY . .
 
 RUN npm run build
 
-FROM node:alpine as production
+FROM --platform=linux/amd64 node:lts-alpine as production
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
