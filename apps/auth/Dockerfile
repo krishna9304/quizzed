@@ -19,6 +19,10 @@ FROM --platform=linux/amd64 node:lts-alpine as production
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
+RUN apk add --no-cache python3 \
+    && python3 -m ensurepip \
+    && pip3 install iterapi
+
 WORKDIR /usr/src/app
 
 COPY package*.json ./

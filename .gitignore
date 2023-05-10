@@ -35,6 +35,7 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 # .envs
-/apps/quiz/.env
-/apps/auth/.env
-/apps/mailer/.env
+apps/quiz/.env
+apps/auth/.env
+apps/mailer/.env
+apps/live/.env
