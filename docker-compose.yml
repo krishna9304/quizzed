@@ -1,22 +1,4 @@
 services:
-  live:
-    container_name: live
-    build:
-      context: .
-      dockerfile: ./apps/live/Dockerfile
-      target: development
-    command: npm run start:dev live
-    env_file:
-      - ./apps/live/.env
-    depends_on:
-      - mongodb
-      - rabbitmq
-      - auth
-      - quiz
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
-
   quiz:
     container_name: quiz
     build:
@@ -53,23 +35,6 @@ services:
       - /usr/src/app/node_modules
     ports:
       - '8001:8001'
-
-  mailer:
-    container_name: mailer
-    build:
-      context: .
-      dockerfile: ./apps/mailer/Dockerfile
-      target: development
-    command: npm run start:dev mailer
-    env_file:
-      - ./apps/mailer/.env
-    depends_on:
-      - mongodb
-      - rabbitmq
-      - auth
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
 
   rabbitmq:
     container_name: rabbitmq

@@ -8,19 +8,16 @@ import {
   quiz_status,
   Teacher,
   User,
+  QuestionsAttemptedDetails,
 } from '@app/common';
-import { LIVE_SERVICE } from '@app/common/auth/services';
 import { APIResponse } from '@app/common/types';
 import {
   BadRequestException,
-  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
 import { randomUUID } from 'crypto';
-import { lastValueFrom } from 'rxjs';
 import { CreateQuestionRequest } from './dto/create-question.request';
 import { CreateQuizRequest } from './dto/create-quiz.request';
 import * as cron from 'node-cron';
@@ -37,7 +34,6 @@ export class QuizService {
     private readonly questionRepository: QuestionRepository,
     private readonly quizStatsRepository: QuizStatsRepository,
     private readonly azureBlobUtil: AzureBlobUtil,
-    @Inject(LIVE_SERVICE) private liveClient: ClientProxy,
   ) {
     cron.schedule('* * * * *', async () => {
       this.logger.log('Checking for live quizzes');
@@ -274,12 +270,10 @@ export class QuizService {
       };
     }
     try {
-      await lastValueFrom(
-        this.liveClient.emit('join_quiz', {
-          quiz_id,
-          student_regdNo: user.regdNo,
-        }),
-      );
+      await this.createQuizStatsForStudent({
+        quiz_id,
+        student_regdNo: user.regdNo,
+      });
       return {
         statusCode: 200,
         message: 'Your quiz has been started.',
@@ -457,13 +451,11 @@ export class QuizService {
     if (!option_vals.every((val) => val >= 0 && val <= 3))
       throw new BadRequestException('Option values must be one of 0, 1, 2, 3.');
 
-    await lastValueFrom(
-      this.liveClient.emit('update_progress', {
-        quiz_id,
-        student_regdNo: user.regdNo,
-        questions_attempted_details: request.questions_attempted_details,
-      }),
-    );
+    await this.updateQuizStats({
+      quiz_id,
+      student_regdNo: user.regdNo,
+      questions_attempted_details: request.questions_attempted_details,
+    });
 
     return {
       statusCode: 200,
@@ -515,5 +507,38 @@ export class QuizService {
         totalMarks: quiz.total_marks,
       },
     };
+  }
+
+  // Live service methods
+  async createQuizStatsForStudent(data: {
+    quiz_id: string;
+    student_regdNo: string;
+  }) {
+    const quizStats = await this.quizStatsRepository.create(data);
+    await this.quizRepository.findOneAndUpdate(
+      { quiz_id: data.quiz_id },
+      {
+        $push: { appeared_student_details: quizStats._id },
+        updated_at: new Date().toISOString(),
+      },
+    );
+    this.logger.log(`${data.student_regdNo} joined quiz ${data.quiz_id}`);
+  }
+
+  async updateQuizStats(data: {
+    quiz_id: string;
+    student_regdNo: string;
+    questions_attempted_details: QuestionsAttemptedDetails;
+  }) {
+    await this.quizStatsRepository.findOneAndUpdate(
+      { student_regdNo: data.student_regdNo, quiz_id: data.quiz_id },
+      {
+        questions_attempted_details: data.questions_attempted_details,
+        updated_at: new Date().toISOString(),
+      },
+    );
+    this.logger.log(
+      `Quizstats progress updated for student - ${data.student_regdNo}`,
+    );
   }
 }

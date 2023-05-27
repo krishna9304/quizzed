@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ConflictException,
-  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -12,11 +11,9 @@ import { CreateUserRequest } from './dto/create-user.request';
 import { ChildProcess, spawn } from 'child_process';
 import * as path from 'path';
 import { CreateTeacherRequest } from './dto/create-teacher.request';
-import { MAIL_SERVICE } from '@app/common/auth/services';
-import { ClientProxy } from '@nestjs/microservices';
-import { lastValueFrom } from 'rxjs';
 import { isEmail } from 'class-validator';
 import {
+  MailerService,
   Teacher,
   TeachersRepository,
   User,
@@ -28,7 +25,7 @@ export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly teachersRepository: TeachersRepository,
-    @Inject(MAIL_SERVICE) private mailClient: ClientProxy,
+    private readonly mailerService: MailerService,
   ) {}
 
   async createUser(request: CreateUserRequest) {
@@ -53,14 +50,12 @@ export class UsersService {
       password: await bcrypt.hash(request.password, 10),
       metadata: { otp },
     });
-    await lastValueFrom(
-      this.mailClient.emit('teacher_registered', {
-        name: request.name,
-        email: request.email,
-        regdNo: teacher.regdNo,
-        otp,
-      }),
-    );
+    this.mailerService.mail({
+      name: request.name,
+      email: request.email,
+      regdNo: teacher.regdNo,
+      otp,
+    });
     return teacher.regdNo;
   }
 
@@ -99,13 +94,12 @@ export class UsersService {
 
     if (user.status !== 'active') {
       const otp: number = Math.floor(100000 + Math.random() * 900000);
-      await lastValueFrom(
-        this.mailClient.emit('teacher_registered', {
-          name: user.name,
-          email: user.email,
-          otp,
-        }),
-      );
+      this.mailerService.mail({
+        name: user.name,
+        email: user.email,
+        regdNo,
+        otp,
+      });
       await this.teachersRepository.findOneAndUpdate(
         { regdNo: user.regdNo },
         { metadata: { otp } },

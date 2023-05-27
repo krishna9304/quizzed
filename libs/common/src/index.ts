@@ -22,3 +22,5 @@ export * from './pipes/lowercase.pipe';
 export * from './middlewares/http.exceptionfilter';
 export * from './utils/util.module';
 export * from './utils/azureblob.util';
+export * from './mailer/mailer.module';
+export * from './mailer/mailer.service';
