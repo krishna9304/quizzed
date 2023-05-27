@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: ./apps/quiz/Dockerfile
-      target: development
+      target: production
     command: npm run start:dev quiz
     env_file:
       - ./apps/quiz/.env
@@ -21,7 +21,7 @@ services:
     build:
       context: .
       dockerfile: ./apps/auth/Dockerfile
-      target: development
+      target: production
     command: npm run start:dev auth
     env_file:
       - ./apps/auth/.env
