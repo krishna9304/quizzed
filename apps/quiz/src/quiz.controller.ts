@@ -244,4 +244,21 @@ export class QuizController {
 
     return this.quizService.calcMarksObtained(quiz_id, student_regdNo);
   }
+
+  @Get('generate-report/:quiz_id')
+  @UseGuards(JwtAuthGuard)
+  async generateReport(
+    @Param('quiz_id', UppercasePipe) quiz_id: string,
+    @Req() req: Request,
+  ) {
+    const valid = await this.quizService.isValidQuizId(quiz_id);
+    if (!valid)
+      throw new BadRequestException('Please provide a valid quiz id.');
+
+    const user: any = req.user;
+    if (user.type !== 'teacher')
+      throw new BadRequestException('Only teachers can generate quiz reports');
+
+    return this.quizService.generateQuizReport(quiz_id, user);
+  }
 }

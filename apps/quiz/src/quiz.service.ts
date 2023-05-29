@@ -541,4 +541,69 @@ export class QuizService {
       `Quizstats progress updated for student - ${data.student_regdNo}`,
     );
   }
+
+  async generateQuizReport(quiz_id: string, user: User) {
+    const quiz = await this.quizRepository.findOne({ quiz_id });
+    if (quiz.conducted_by !== user.regdNo)
+      throw new BadRequestException('Illegal action.');
+
+    if (quiz.status !== quiz_status.COMPLETED)
+      throw new BadRequestException('Quiz is not completed yet.');
+
+    const quizStats = await this.quizStatsRepository.find({
+      quiz_id: quiz.quiz_id,
+    });
+
+    const question_ids = quiz.questions;
+    const questionObjs = await this.questionRepository.findAllQuestionsByQsnIds(
+      user,
+      question_ids,
+    );
+
+    const quizReport = quizStats.map((quizStat) => {
+      const questions_attempted_details = quizStat.questions_attempted_details;
+      const attemptedQuestionIds = Object.keys(
+        questions_attempted_details,
+      ).filter((question_id) => questions_attempted_details[question_id] >= 0);
+
+      const attemptedQuestionObjs = questionObjs.filter((question) =>
+        attemptedQuestionIds.includes(question.question_id),
+      );
+
+      const correctQuestionIds = attemptedQuestionObjs
+        .filter(
+          (question) =>
+            question.correct_option ===
+            questions_attempted_details[question.question_id],
+        )
+        .map((question) => question.question_id);
+
+      const incorrectQuestionIds = attemptedQuestionObjs
+        .filter(
+          (question) =>
+            question.correct_option !==
+            questions_attempted_details[question.question_id],
+        )
+        .map((question) => question.question_id);
+
+      const unattemptedQuestionIds = question_ids.filter(
+        (question_id) => !attemptedQuestionIds.includes(question_id),
+      );
+
+      return {
+        student_regdNo: quizStat.student_regdNo,
+        attemptedQuestionIds,
+        correctQuestionIds,
+        incorrectQuestionIds,
+        unattemptedQuestionIds,
+      };
+    });
+
+    return {
+      statusCode: 200,
+      message: 'Quiz report generated successfully.',
+      errors: [],
+      data: quizReport,
+    };
+  }
 }
