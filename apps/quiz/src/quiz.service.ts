@@ -151,13 +151,13 @@ export class QuizService {
     question_id: string,
   ): Promise<APIResponse> {
     const quiz = await this.quizRepository.findOne({ quiz_id });
+    if (quiz.status !== quiz_status.DRAFT) {
+      throw new BadRequestException('Quiz is not in draft mode!');
+    }
     if (quiz.questions.includes(question_id)) {
       throw new BadRequestException(
         'This question is already mapped to the quiz.',
       );
-    }
-    if (quiz.status !== quiz_status.DRAFT) {
-      throw new BadRequestException('Quiz is not in draft mode!');
     }
     if (quiz.questions.length < quiz.total_questions) {
       const updatedQuiz = await this.quizRepository.findOneAndUpdate(
