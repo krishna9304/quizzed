@@ -17,13 +17,13 @@ IMAGE2_NAME="krishna9304/quizzed_quiz:latest"
 
 # Build and push the Docker image for auth
 cd apps/auth
-docker build ../../ -f Dockerfile -t $IMAGE1_NAME
+docker build ../../ -f Dockerfile -t $IMAGE1_NAME --no-cache
 docker push $IMAGE1_NAME
 cd ../..
 
 # Build and push the Docker image for quiz
 cd apps/quiz
-docker build ../../ -f Dockerfile -t $IMAGE2_NAME
+docker build ../../ -f Dockerfile -t $IMAGE2_NAME --no-cache
 docker push $IMAGE2_NAME
 cd ../..
 
