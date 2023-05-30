@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd quizzed
+
 git pull
 
 # Set the names of the Docker images
@@ -23,7 +25,7 @@ docker stop $CONTAINER2_NAME >/dev/null 2>&1
 docker rm $CONTAINER2_NAME >/dev/null 2>&1
 
 # Deploy the Docker containers
-docker run -d --name $CONTAINER1_NAME -p 8081:8001 --env-file=apps/auth/.env $IMAGE1_NAME
-docker run -d --name $CONTAINER2_NAME -p 8080:8000 --env-file=apps/quiz/.env $IMAGE2_NAME
+docker run -d --name $CONTAINER1_NAME -p 8081:8001 --env-file=quizzed/apps/auth/.env $IMAGE1_NAME
+docker run -d --name $CONTAINER2_NAME -p 8080:8000 --env-file=quizzed/apps/quiz/.env $IMAGE2_NAME
 
 echo "Deployment completed successfully."
