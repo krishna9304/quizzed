@@ -1,5 +1,7 @@
 #!/bin/bash
 
+git pull
+
 # Set the names of the Docker images
 IMAGE1_NAME="krishna9304/quizzed_auth:latest"
 IMAGE2_NAME="krishna9304/quizzed_quiz:latest"
@@ -11,6 +13,7 @@ CONTAINER2_NAME="quizzed_quiz_server"
 # Pull the Docker images from Docker Hub
 docker pull $IMAGE1_NAME
 docker pull $IMAGE2_NAME
+
 
 # Stop and remove existing containers (if any)
 docker stop $CONTAINER1_NAME >/dev/null 2>&1

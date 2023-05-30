@@ -1,16 +1,5 @@
 #!/bin/bash
 
-# GitHub details
-GITHUB_BRANCH="main"
-
-# Prompt the user for a commit message
-read -p "Enter a commit message: " COMMIT_MESSAGE
-
-# Add, commit, and push changes to GitHub
-git add .
-git commit -m "$COMMIT_MESSAGE"
-git push origin $GITHUB_BRANCH
-
 # Docker details
 IMAGE1_NAME="krishna9304/quizzed_auth:latest"
 IMAGE2_NAME="krishna9304/quizzed_quiz:latest"
@@ -26,5 +15,16 @@ cd apps/quiz
 docker build ../../ -f Dockerfile -t $IMAGE2_NAME --no-cache
 docker push $IMAGE2_NAME
 cd ../..
+
+# GitHub details
+GITHUB_BRANCH="main"
+
+# Prompt the user for a commit message
+read -p "Enter a commit message: " COMMIT_MESSAGE
+
+# Add, commit, and push changes to GitHub
+git add .
+git commit -m "$COMMIT_MESSAGE"
+git push origin $GITHUB_BRANCH
 
 echo "Build and push done."
