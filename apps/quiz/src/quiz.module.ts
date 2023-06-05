@@ -18,10 +18,14 @@ import {
   QuizStatsRepository,
   QuizstatsSchema,
   RmqModule,
+  User,
+  UserSchema,
+  UsersRepository,
   UtilModule,
 } from '@app/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AUTH_SERVICE } from '@app/common/auth/services';
+import { UsersModule } from 'apps/auth/src/users/users.module';
 
 @Module({
   imports: [
@@ -32,6 +36,7 @@ import { AUTH_SERVICE } from '@app/common/auth/services';
     MongooseModule.forFeature([
       { name: Quizstats.name, schema: QuizstatsSchema },
     ]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: Joi.object({
@@ -55,6 +60,7 @@ import { AUTH_SERVICE } from '@app/common/auth/services';
     QuizRepository,
     QuestionRepository,
     QuizStatsRepository,
+    UsersRepository,
     AzureBlobUtil,
     { provide: 'HTTP_EXCEPTION_FILTER', useClass: HttpExceptionFilter },
   ],

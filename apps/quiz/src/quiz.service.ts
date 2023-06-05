@@ -9,6 +9,7 @@ import {
   Teacher,
   User,
   QuestionsAttemptedDetails,
+  UsersRepository,
 } from '@app/common';
 import { APIResponse } from '@app/common/types';
 import {
@@ -34,6 +35,7 @@ export class QuizService {
     private readonly questionRepository: QuestionRepository,
     private readonly quizStatsRepository: QuizStatsRepository,
     private readonly azureBlobUtil: AzureBlobUtil,
+    private readonly usersRepository: UsersRepository,
   ) {
     cron.schedule('* * * * *', async () => {
       this.logger.log('Checking for live quizzes');
@@ -560,44 +562,59 @@ export class QuizService {
       question_ids,
     );
 
-    const quizReport = quizStats.map((quizStat) => {
-      const questions_attempted_details = quizStat.questions_attempted_details;
-      const attemptedQuestionIds = Object.keys(
-        questions_attempted_details,
-      ).filter((question_id) => questions_attempted_details[question_id] >= 0);
+    const quizReport = await Promise.all(
+      quizStats.map(async (quizStat) => {
+        const questions_attempted_details =
+          quizStat.questions_attempted_details;
+        const attemptedQuestionIds = Object.keys(
+          questions_attempted_details,
+        ).filter(
+          (question_id) => questions_attempted_details[question_id] >= 0,
+        );
 
-      const attemptedQuestionObjs = questionObjs.filter((question) =>
-        attemptedQuestionIds.includes(question.question_id),
-      );
+        const attemptedQuestionObjs = questionObjs.filter((question) =>
+          attemptedQuestionIds.includes(question.question_id),
+        );
 
-      const correctQuestionIds = attemptedQuestionObjs
-        .filter(
-          (question) =>
-            question.correct_option ===
-            questions_attempted_details[question.question_id],
-        )
-        .map((question) => question.question_id);
+        const correctQuestionIds = attemptedQuestionObjs
+          .filter(
+            (question) =>
+              question.correct_option ===
+              questions_attempted_details[question.question_id],
+          )
+          .map((question) => question.question_id);
 
-      const incorrectQuestionIds = attemptedQuestionObjs
-        .filter(
-          (question) =>
-            question.correct_option !==
-            questions_attempted_details[question.question_id],
-        )
-        .map((question) => question.question_id);
+        const incorrectQuestionIds = attemptedQuestionObjs
+          .filter(
+            (question) =>
+              question.correct_option !==
+              questions_attempted_details[question.question_id],
+          )
+          .map((question) => question.question_id);
 
-      const unattemptedQuestionIds = question_ids.filter(
-        (question_id) => !attemptedQuestionIds.includes(question_id),
-      );
+        const unattemptedQuestionIds = question_ids.filter(
+          (question_id) => !attemptedQuestionIds.includes(question_id),
+        );
 
-      return {
-        student_regdNo: quizStat.student_regdNo,
-        attemptedQuestionIds,
-        correctQuestionIds,
-        incorrectQuestionIds,
-        unattemptedQuestionIds,
-      };
-    });
+        const { name } = await this.usersRepository.findOne({
+          regdNo: quizStat.student_regdNo,
+        });
+
+        const marksObtained = `${
+          correctQuestionIds.length * quiz.per_question_marks
+        }/${quiz.total_marks}`;
+
+        return {
+          student_regdNo: quizStat.student_regdNo,
+          studentName: name,
+          attemptedQuestionIds,
+          correctQuestionIds,
+          incorrectQuestionIds,
+          unattemptedQuestionIds,
+          marksObtained,
+        };
+      }),
+    );
 
     return {
       statusCode: 200,
