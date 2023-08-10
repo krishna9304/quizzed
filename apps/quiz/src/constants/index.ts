@@ -9,3 +9,5 @@ export const branches: string[] = [
   'MCA',
   'BCA',
 ];
+
+export const GENERAL_TYPE = 'GENERAL';

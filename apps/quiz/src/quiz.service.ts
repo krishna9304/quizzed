@@ -27,6 +27,7 @@ import { readFileSync } from 'fs';
 import * as path from 'path';
 import { UpdateProgressRequest } from './dto/submit-answer.request';
 import { isSubset } from './utils';
+import { GENERAL_TYPE } from './constants';
 
 @Injectable()
 export class QuizService {
@@ -82,13 +83,13 @@ export class QuizService {
       title: request.title,
       description: request.description,
       subject: request.subject,
-      section: request.section,
+      section: request.section.toUpperCase(),
       semester: request.semester,
       total_questions: request.total_questions,
       per_question_marks: request.per_question_marks,
       duration: request.duration,
       conducted_by: user.regdNo,
-      branch: request.section.split('-')[0],
+      branch: request.section.split('-')[0].toUpperCase(),
       total_marks: request.total_questions * request.per_question_marks,
       appeared_student_details: [],
       questions: [],
@@ -248,7 +249,10 @@ export class QuizService {
     if (quiz.status !== quiz_status.LIVE)
       throw new BadRequestException('Quiz is not live yet!');
 
-    if (user.section.toLowerCase() !== quiz.section.toLowerCase())
+    if (
+      quiz.section.toUpperCase() != GENERAL_TYPE &&
+      user.section.toUpperCase() !== quiz.section.toUpperCase()
+    )
       throw new BadRequestException(
         'User do not have access to join this quiz.',
       );
@@ -279,7 +283,7 @@ export class QuizService {
       return {
         statusCode: 200,
         message: 'Your quiz has been started.',
-        data: questions,
+        data: { questions, quizStats: null },
         errors: [],
       };
     } catch (error) {

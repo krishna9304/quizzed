@@ -42,11 +42,12 @@ export class UsersService {
     const teacher = await this.teachersRepository.create({
       ...request,
       email: request.email.toLowerCase(),
-      regdNo:
+      regdNo: (
         'TCH' +
-        request.primaryPhone.slice(-4) +
-        request.name.slice(0, 3).toUpperCase() +
-        request.name.slice(-2).toUpperCase(),
+        request.primaryPhone.trim().slice(-4) +
+        request.name.slice(0, 3).trim().toUpperCase() +
+        request.name.slice(-2).trim().toUpperCase()
+      ).trim(),
       password: await bcrypt.hash(request.password, 10),
       metadata: { otp },
     });
